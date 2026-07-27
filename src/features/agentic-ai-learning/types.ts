@@ -1,0 +1,9 @@
+export const AI_CATEGORIES = ['Raw API Fundamentals', 'Claude Agent SDK', 'LangGraph/LangChain', 'MCP Server Development', 'RAG & Vector Stores', 'Evals & Observability', 'AI Engineering Foundations'] as const
+export type AiCategory = (typeof AI_CATEGORIES)[number]
+export const AI_STATUSES = ['not-started', 'learning', 'practiced', 'mastered'] as const
+export type AiStatus = (typeof AI_STATUSES)[number]
+export type AiTopic = { id: string; category: AiCategory; title: string; status: AiStatus; resource_link: string; anchor_project: string; notes: string }
+export type ReadingStatus = 'not-started' | 'in-progress' | 'done'
+export type ReadingItem = { id: string; title: string; status: ReadingStatus; notes: string }
+export const AI_STATUS_LABEL: Record<AiStatus, string> = { 'not-started': 'Not started', learning: 'Learning', practiced: 'Practiced', mastered: 'Mastered' }
+export const READING_STATUS_LABEL: Record<ReadingStatus, string> = { 'not-started': 'Not started', 'in-progress': 'In progress', done: 'Done' }

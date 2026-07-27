@@ -1,0 +1,42 @@
+@import '../features/layout/layout.css';
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  background: #f7f9fe;
+  font-size: 12px;
+}
+main {
+  width: calc(100% - 267px);
+  transition: width 0.2s ease;
+}
+.app.collapsed main {
+  width: calc(100% - 76px);
+}
+
+/* ---- Dark theme ---- */
+.app.dark {
+  background: #162039;
+}
+.app.dark main {
+  background: #18223b;
+  color: #eef1ff;
+}
+.app.dark .panel,
+.app.dark .module-card,
+.app.dark header,
+.app.dark .date {
+  background: #212d4b;
+  color: #fff;
+}
+.app.dark .module-card p,
+.app.dark small,
+.app.dark .module-card .numbers small {
+  color: #8190b2;
+}
+
+@media (max-width: 1250px) {
+  main {
+    width: calc(100% - 230px);
+  }
+}
