@@ -37,3 +37,15 @@
 .week-usecases-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
 .week-usecases-list li { font-size: 12px; color: #31405f; display: flex; align-items: flex-start; gap: 8px; padding: 8px 12px; background: var(--accent-bg); border: 1px solid var(--accent-border); border-radius: 6px; line-height: 1.5; }
 .week-uc-bullet { color: var(--accent); font-size: 11px; flex-shrink: 0; margin-top: 1px; }
+
+/* ── Week status (6-week plan) ─────────────────────────────────────────────── */
+.go-week-head-right { margin-left: auto; display: inline-flex; align-items: center; gap: 10px; }
+.go-week-head-right em { margin-left: 0; }
+.go-status-select { border: 1px solid #dde3ef; border-radius: 8px; padding: 6px 10px; font-size: 12px; font-weight: 600; color: #31405f; background: #fff; cursor: pointer; outline: none; flex-shrink: 0; }
+.go-status-select:focus { border-color: var(--accent, #c96442); }
+.go-week-pill { display: inline-flex; align-items: center; font-size: 10px; font-weight: 700; border-radius: 4px; padding: 2px 7px; border: 1px solid; white-space: nowrap; }
+.go-week-pill.not-started { background: #f3f5f9; color: #7a8aaa; border-color: #dde3ef; }
+.go-week-pill.in-progress { background: rgba(245, 158, 11, 0.1); color: #92610a; border-color: rgba(245, 158, 11, 0.3); }
+.go-week-pill.done { background: rgba(34, 197, 94, 0.1); color: #166534; border-color: rgba(34, 197, 94, 0.3); }
+.app.dark .go-status-select { background: #1b2743; border-color: #2f3d61; color: #dbe3f5; }
+.app.dark .go-week-pill.not-started { background: #2a3556; color: #a9b5d3; border-color: #2f3d61; }

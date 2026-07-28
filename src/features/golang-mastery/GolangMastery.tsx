@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useGolangMastery } from './store'
+import { GO_WEEK_STATUSES, GO_WEEK_STATUS_LABEL } from './types'
+import type { GoWeekStatus } from './types'
 import './golang-mastery.css'
 import '../../shared/mastery-layout.css'
 
@@ -280,13 +282,18 @@ function RoadmapView() {
 }
 
 function WeeklyPlanView() {
+  const { weekStatuses, setWeekStatus } = useGolangMastery()
   const [activeWeek, setActiveWeek] = useState(1)
   const week = WEEKLY_PLAN.find(w => w.id === activeWeek) ?? WEEKLY_PLAN[0]
+  const weekStatus = weekStatuses[week.id] ?? 'not-started'
+  const weeksDone = WEEKLY_PLAN.filter(w => (weekStatuses[w.id] ?? 'not-started') === 'done').length
 
   return (
     <div>
       <div className="roadmap-meta">
         <span className="roadmap-meta-stat"><strong>6</strong> weeks</span>
+        <span className="roadmap-meta-sep">·</span>
+        <span className="roadmap-meta-stat"><strong>{weeksDone}</strong> done</span>
         <span className="roadmap-meta-sep">·</span>
         <span className="roadmap-meta-stat"><strong>1h</strong> read concepts</span>
         <span className="roadmap-meta-sep">·</span>
@@ -296,21 +303,35 @@ function WeeklyPlanView() {
       </div>
       <div className="mastery-layout">
         <aside className="mastery-left">
-          {WEEKLY_PLAN.map(w => (
-            <button key={w.id} className={`cat-item ${activeWeek === w.id ? 'active' : ''}`} onClick={() => setActiveWeek(w.id)}>
-              <div className="cat-item-hd">
-                <span className="cat-item-name">{w.label}</span>
-                <span className="cat-item-cnt">{w.topics.length} topics</span>
-              </div>
-              <span className="cat-pct" style={{ color: '#8994aa', marginTop: 2 }}>{w.title}</span>
-            </button>
-          ))}
+          {WEEKLY_PLAN.map(w => {
+            const st = weekStatuses[w.id] ?? 'not-started'
+            return (
+              <button key={w.id} className={`cat-item ${activeWeek === w.id ? 'active' : ''}`} onClick={() => setActiveWeek(w.id)}>
+                <div className="cat-item-hd">
+                  <span className="cat-item-name">{w.label}</span>
+                  <span className={`go-week-pill ${st}`}>{GO_WEEK_STATUS_LABEL[st]}</span>
+                </div>
+                <span className="cat-pct" style={{ color: '#8994aa', marginTop: 2 }}>{w.title}</span>
+              </button>
+            )
+          })}
         </aside>
         <div className="mastery-right">
           <div className="phase-section">
             <div className="phase-head" style={{ cursor: 'default' }}>
               <span>{week.label} — {week.title}</span>
-              <em>{week.focus}</em>
+              <span className="go-week-head-right">
+                <em>{week.focus}</em>
+                <select
+                  className="go-status-select"
+                  value={weekStatus}
+                  onChange={e => setWeekStatus(week.id, e.target.value as GoWeekStatus)}
+                >
+                  {GO_WEEK_STATUSES.map(s => (
+                    <option key={s} value={s}>{GO_WEEK_STATUS_LABEL[s]}</option>
+                  ))}
+                </select>
+              </span>
             </div>
             <div style={{ padding: '10px 14px 14px' }}>
               <div className="week-section-label">Topics</div>

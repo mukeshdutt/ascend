@@ -54,25 +54,12 @@ function LessonDetail({
   onStatusChange: (s: ReactStatus) => void
 }) {
   const { lessonNum, title, status, content } = lesson
-  const isDone = status === 'mastered'
 
   return (
     <div className="rm-detail">
       <div className="rm-detail-hd">
         <span className="rm-detail-num">{lessonNum}</span>
         <h2 className="rm-detail-title">{title}</h2>
-        <button
-          className={`rm-done-btn${isDone ? ' done' : ''}`}
-          onClick={() => onStatusChange(isDone ? 'not-started' : 'mastered')}
-          title={isDone ? 'Mark incomplete' : 'Mark complete'}
-        >
-          {isDone
-            ? <Icon name="check" size={16} />
-            : <span className="rm-done-square" />}
-        </button>
-      </div>
-
-      <div className="rm-status-row">
         <select
           className={`react-status ${status}`}
           value={status}

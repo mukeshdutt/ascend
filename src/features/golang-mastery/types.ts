@@ -6,3 +6,6 @@ export const GO_PHASES = ['Foundation', 'Applied Practice', 'Production-Ready'] 
 export type GoPhase = (typeof GO_PHASES)[number]
 export type GoTopic = { id: string; category: GoCategory; phase: GoPhase; title: string; status: GoStatus; resource_link: string; applied_in_project: string; notes: string }
 export const GO_STATUS_LABEL: Record<GoStatus, string> = { 'not-started': 'Not started', learning: 'Learning', practiced: 'Practiced', mastered: 'Mastered' }
+export const GO_WEEK_STATUSES = ['not-started', 'in-progress', 'done'] as const
+export type GoWeekStatus = (typeof GO_WEEK_STATUSES)[number]
+export const GO_WEEK_STATUS_LABEL: Record<GoWeekStatus, string> = { 'not-started': 'Not Started', 'in-progress': 'In Progress', done: 'Done' }

@@ -200,42 +200,6 @@
   line-height: 1.3;
 }
 
-.rm-done-btn {
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1.5px solid #cdd5e8;
-  border-radius: 6px;
-  background: #fff;
-  cursor: pointer;
-  color: #8898bb;
-  flex-shrink: 0;
-  transition: border-color 0.15s, background 0.15s, color 0.15s;
-}
-
-.rm-done-btn:hover { border-color: #28b86d; color: #28b86d; }
-
-.rm-done-btn.done {
-  background: #28b86d;
-  border-color: #28b86d;
-  color: #fff;
-}
-
-.rm-done-square {
-  display: block;
-  width: 12px;
-  height: 12px;
-  border: 1.5px solid currentColor;
-  border-radius: 2px;
-}
-
-.rm-status-row {
-  display: flex;
-  align-items: center;
-}
-
 /* ── Content sections ────────────────────────────────────────────────────── */
 .rm-section {
   border-radius: 8px;
@@ -373,6 +337,7 @@
   background: #f4f6fb;
   color: #65718d;
   cursor: pointer;
+  flex-shrink: 0;
 }
 .react-status.learning  { background: #edf4ff; color: #3972d1; border-color: #c8ddf8; }
 .react-status.practiced { background: #fff4e2; color: #bb7917; border-color: #f5d99a; }
@@ -394,7 +359,6 @@
 .dark .rm-detail-hd { border-bottom-color: #1e2a4a; }
 .dark .rm-detail-num { background: #1a2240; border-color: #2a3560; color: #8aa0cc; }
 .dark .rm-detail-title { color: #e0eaff; }
-.dark .rm-done-btn { background: #1a2240; border-color: #2a3560; color: #6b84b8; }
 .dark .rm-section p, .dark .rm-section li { color: #c0d0f0; }
 .dark .rm-concept  { background: #1a1f38; border-left-color: #6366f1; }
 .dark .rm-project  { background: #0f201a; border-left-color: #22c55e; }
