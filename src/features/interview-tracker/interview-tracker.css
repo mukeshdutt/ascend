@@ -10,6 +10,10 @@
 .track-tabs { display: flex; overflow-x: auto; border-bottom: 1px solid #e4e8f0; margin-bottom: 14px; }
 .track-tabs button { white-space: nowrap; border-radius: 0; padding: 10px 12px; }
 .track-tabs button.active { color: #6245d6; border-bottom: 2px solid #6245d6; }
+.track-note { margin: -4px 0 12px; padding: 9px 13px; border-left: 3px solid var(--accent); background: var(--accent-bg); color: var(--accent-dark); border-radius: 0 8px 8px 0; font-size: 12px; }
+.phase-row td { padding: 9px 14px !important; background: var(--accent-bg); border-bottom: 1px solid var(--accent-border) !important; }
+.phase-row strong { color: var(--accent-dark); font-size: 11px; text-transform: uppercase; letter-spacing: .8px; font-weight: 800; }
+.phase-row em { margin-left: 10px; color: var(--accent); font-style: normal; font-size: 11px; }
 .bulk-bar { display: flex; align-items: center; gap: 12px; padding: 8px 12px; background: #eef4ff; color: #405a91; border-radius: 8px; margin-bottom: 10px; font-weight: 700; }
 .bulk-bar button { border: 0; background: #315fbd; color: #fff; border-radius: 6px; padding: 6px 10px; display: inline-flex; gap: 5px; align-items: center; font-size: 12px; font-weight: 700; }
 .topic-table-wrap, .overview-card { background: #fff; border: 1px solid #e3e7f0; border-radius: 10px; overflow: hidden; }

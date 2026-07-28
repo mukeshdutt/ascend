@@ -545,6 +545,221 @@
   color: #dbe3f5;
 }
 
+/* ---- View tabs ---- */
+.behavioral-tabs {
+  display: flex;
+  gap: 6px;
+  margin: 18px 0 0;
+}
+.behavioral-tabs button {
+  border: 1px solid #dce5ee;
+  background: #fff;
+  border-radius: 7px;
+  padding: 8px 14px;
+  color: #65728b;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.behavioral-tabs button.active {
+  color: var(--accent-dark, var(--accent));
+  background: var(--accent-bg);
+  border-color: var(--accent-border);
+}
+
+/* ---- 6-week prep plan ---- */
+.prep-plan {
+  margin-top: 16px;
+}
+.plan-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+.plan-header h2 {
+  margin: 0 0 3px;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+.plan-header p {
+  margin: 0;
+  font-size: 12px;
+  color: #6a7590;
+}
+.plan-overall {
+  text-align: right;
+}
+.plan-overall b {
+  display: block;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  line-height: 1;
+  color: var(--accent-dark);
+}
+.plan-overall span {
+  font-size: 11px;
+  color: #6a7590;
+}
+.plan-progress-track {
+  height: 7px;
+  border-radius: 20px;
+  background: #eef0f5;
+  margin: 12px 0 18px;
+  overflow: hidden;
+}
+.plan-progress-fill {
+  height: 100%;
+  border-radius: 20px;
+  background: var(--accent);
+  transition: width 0.25s;
+}
+
+.plan-week {
+  background: #fff;
+  border: 1px solid #edf0f6;
+  border-radius: 10px;
+  box-shadow: 0 3px 10px #233d760d;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+.plan-week.open {
+  border-color: var(--accent-border);
+}
+.plan-week-head {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 15px;
+  text-align: left;
+  cursor: pointer;
+}
+.plan-week-head > svg {
+  color: #8592ad;
+  flex: none;
+}
+.plan-week-code {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--accent-dark);
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
+  border-radius: 6px;
+  padding: 3px 8px;
+}
+.plan-week-head h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+.plan-week-head em {
+  font-size: 12px;
+  font-style: normal;
+  color: #6a7590;
+}
+.plan-week-count {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 700;
+  color: #6a7590;
+  background: #eef1f6;
+  border-radius: 20px;
+  padding: 3px 9px;
+}
+.plan-week-count.done {
+  color: #1caa66;
+  background: #e9f9f0;
+}
+.plan-sections {
+  border-top: 1px solid #eef0f6;
+  padding: 14px 16px 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+.plan-section h4 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #34415b;
+}
+.plan-section ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+.plan-section label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  color: #34415b;
+  line-height: 1.45;
+  padding: 4px 6px;
+  border-radius: 7px;
+  cursor: pointer;
+}
+.plan-section label:hover {
+  background: var(--accent-bg);
+}
+.plan-section label.checked span {
+  color: #9aa6bf;
+  text-decoration: line-through;
+}
+.plan-section input[type='checkbox'] {
+  margin-top: 2px;
+  width: 15px;
+  height: 15px;
+  flex: none;
+  accent-color: var(--accent);
+}
+.plan-mantra {
+  text-align: center;
+  font-size: 12px;
+  color: #8b96ae;
+  font-style: italic;
+  margin: 18px 0 4px;
+}
+
+/* ---- Dark theme ---- */
+.app.dark .behavioral-tabs button {
+  background: #1b2743;
+  border-color: #2f3d61;
+  color: #a9b5d3;
+}
+.app.dark .behavioral-tabs button.active {
+  color: var(--accent);
+  background: #2a3556;
+  border-color: var(--accent-dark);
+}
+.app.dark .plan-week {
+  background: #212d4b;
+  border-color: #2f3d61;
+}
+.app.dark .plan-sections {
+  border-color: #2f3d61;
+}
+.app.dark .plan-section h4,
+.app.dark .plan-section label {
+  color: #dbe3f5;
+}
+.app.dark .plan-progress-track,
+.app.dark .plan-week-count {
+  background: #2a3556;
+}
+.app.dark .plan-section label:hover {
+  background: #2a3556;
+}
+
 /* ---- Dark theme ---- */
 .app.dark .story-card {
   background: #212d4b;

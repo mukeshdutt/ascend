@@ -12,6 +12,9 @@ type BehavioralContextValue = {
   /** Record a practice: bumps count, sets last-practiced to today, logs the day,
    *  optionally re-rates confidence, and nudges status forward. */
   practiceStory: (id: string, newConfidence?: number) => void
+  /** Completed task ids of the 6-week preparation plan. */
+  planDone: Record<string, boolean>
+  togglePlanTask: (id: string) => void
 }
 
 const BehavioralContext = createContext<BehavioralContextValue | null>(null)
@@ -19,6 +22,11 @@ const BehavioralContext = createContext<BehavioralContextValue | null>(null)
 export function BehavioralProvider({ children }: { children: ReactNode }) {
   const [stories, setStories] = useState<Story[]>(seedStories)
   const [practiceLog, setPracticeLog] = useState<string[]>(seedPracticeLog)
+  const [planDone, setPlanDone] = useState<Record<string, boolean>>({})
+
+  const togglePlanTask = useCallback((id: string) => {
+    setPlanDone((prev) => ({ ...prev, [id]: !prev[id] }))
+  }, [])
 
   const updateStory = useCallback((id: string, patch: Partial<Story>) => {
     setStories((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)))
@@ -44,8 +52,8 @@ export function BehavioralProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const value = useMemo(
-    () => ({ stories, practiceLog, updateStory, practiceStory }),
-    [stories, practiceLog, updateStory, practiceStory],
+    () => ({ stories, practiceLog, updateStory, practiceStory, planDone, togglePlanTask }),
+    [stories, practiceLog, updateStory, practiceStory, planDone, togglePlanTask],
   )
 
   return <BehavioralContext.Provider value={value}>{children}</BehavioralContext.Provider>

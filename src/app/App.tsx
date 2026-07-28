@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { Sidebar } from '../features/layout/Sidebar'
 import { Header } from '../features/layout/Header'
 import { Dashboard } from '../features/dashboard/Dashboard'
-import { TechInterviewTracker } from '../features/tech-interview-tracker/TechInterviewTracker'
 import { ProblemsProvider } from '../features/tech-interview-tracker/store'
+import { TechnicalLearning } from '../features/tech-learning/TechnicalLearning'
+import { TechLearningProvider } from '../features/tech-learning/store'
 import { BehavioralInterview } from '../features/behavioral-interview/BehavioralInterview'
 import { BehavioralProvider } from '../features/behavioral-interview/store'
 import { InterviewTracker } from '../features/interview-tracker/InterviewTracker'
@@ -41,7 +42,7 @@ function App() {
   const activeLabel = navItems[activeNav]?.label
 
   const renderView = () => {
-    if (activeLabel === 'Technical Learning') return <TechInterviewTracker />
+    if (activeLabel === 'Technical Learning') return <TechnicalLearning />
     if (activeLabel === 'Golang Mastery') return <GolangMastery />
     if (activeLabel === 'Behavioral Interview') return <BehavioralInterview />
     if (activeLabel === 'Interview 2026') return <InterviewTracker />
@@ -57,6 +58,7 @@ function App() {
   return (
     <CurrentActionsProvider>
       <ProblemsProvider>
+        <TechLearningProvider>
         <BehavioralProvider>
           <InterviewTrackerProvider><ReactMasteryProvider><GolangMasteryProvider><JavaStudyProvider><AgenticAiProvider><CloudMasteryProvider><ClaudeMasteryProvider><div className={className}>
             <Sidebar activeNav={activeNav} onNavigate={setActiveNav} onLogout={() => setAuthenticated(false)} />
@@ -72,6 +74,7 @@ function App() {
             </main>
           </div></ClaudeMasteryProvider></CloudMasteryProvider></AgenticAiProvider></JavaStudyProvider></GolangMasteryProvider></ReactMasteryProvider></InterviewTrackerProvider>
         </BehavioralProvider>
+        </TechLearningProvider>
       </ProblemsProvider>
     </CurrentActionsProvider>
   )

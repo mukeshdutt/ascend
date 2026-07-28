@@ -42,6 +42,28 @@ export const CATEGORY_LABEL: Record<CategoryKey, string> = CATEGORIES.reduce(
 
 export const STATUSES: StoryStatus[] = ['not-started', 'drafted', 'practiced', 'interview-ready']
 
+// ---- 6-week preparation plan ----
+
+export type PlanTask = {
+  id: string
+  label: string
+}
+
+export type PlanSection = {
+  id: string
+  emoji: string
+  title: string
+  tasks: PlanTask[]
+}
+
+export type PlanWeek = {
+  id: string
+  code: string // e.g. "W1"
+  title: string
+  subtitle: string
+  sections: PlanSection[]
+}
+
 export const STATUS_META: Record<StoryStatus, { label: string; className: string }> = {
   'not-started': { label: 'Not Started', className: 'bs-notstarted' },
   drafted: { label: 'Drafted', className: 'bs-drafted' },

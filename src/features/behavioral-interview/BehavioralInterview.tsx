@@ -8,9 +8,18 @@ import { StreakGrid } from './components/StreakGrid'
 import { CategoryGroup } from './components/CategoryGroup'
 import { StoryCard } from './components/StoryCard'
 import { PracticeMode } from './components/PracticeMode'
+import { PrepPlan } from './components/PrepPlan'
 import './behavioral.css'
 
 type SortMode = 'category' | 'weakest'
+type ViewTab = 'stories' | 'plan'
+
+const ACCENT = {
+  '--accent': '#c96442',
+  '--accent-bg': '#fdf3ef',
+  '--accent-border': '#f0c9b8',
+  '--accent-dark': '#9b4628',
+} as React.CSSProperties
 
 export function BehavioralInterview() {
   const { stories, practiceLog, updateStory } = useBehavioral()
@@ -18,6 +27,7 @@ export function BehavioralInterview() {
   const [sortMode, setSortMode] = useState<SortMode>('category')
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [practicing, setPracticing] = useState(false)
+  const [viewTab, setViewTab] = useState<ViewTab>('stories')
   const [openCategories, setOpenCategories] = useState<Record<CategoryKey, boolean>>(() =>
     Object.fromEntries(CATEGORIES.map((category) => [category.key, true])) as Record<CategoryKey, boolean>,
   )
@@ -49,17 +59,32 @@ export function BehavioralInterview() {
   )
 
   return (
-    <div className="content behavioral">
+    <div className="content behavioral" style={ACCENT}>
       <section className="intro">
         <div>
           <h1>Behavioral Interview</h1>
           <p>STAR-method story bank &amp; speaking-practice tracker.</p>
         </div>
-        <button className="btn-primary" onClick={() => setPracticing(true)}>
-          <Icon name="play" size={15} /> Practice mode
-        </button>
+        {viewTab === 'stories' && (
+          <button className="btn-primary" onClick={() => setPracticing(true)}>
+            <Icon name="play" size={15} /> Practice mode
+          </button>
+        )}
       </section>
 
+      <div className="behavioral-tabs">
+        <button className={viewTab === 'stories' ? 'active' : ''} onClick={() => setViewTab('stories')}>
+          Story Bank
+        </button>
+        <button className={viewTab === 'plan' ? 'active' : ''} onClick={() => setViewTab('plan')}>
+          6-Week Plan
+        </button>
+      </div>
+
+      {viewTab === 'plan' ? (
+        <PrepPlan />
+      ) : (
+        <>
       <div className="behavioral-top">
         <SummaryPanel stories={stories} />
         <StreakGrid practiceLog={practiceLog} />
@@ -122,6 +147,8 @@ export function BehavioralInterview() {
             }
           />
         ))
+      )}
+        </>
       )}
 
       {practicing && <PracticeMode queue={practiceQueue} onClose={() => setPracticing(false)} />}

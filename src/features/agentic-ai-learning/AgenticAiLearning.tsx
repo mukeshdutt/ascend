@@ -7,7 +7,7 @@ import '../react-mastery/react-mastery.css'
 import './agentic-ai.css'
 import '../../shared/mastery-layout.css'
 
-const ACCENT = { '--accent': '#7851e8', '--accent-bg': '#f0ecfd', '--accent-border': '#c4b0f5', '--accent-dark': '#5a38c0' } as React.CSSProperties
+const ACCENT = { '--accent': '#c96442', '--accent-bg': '#fdf3ef', '--accent-border': '#f0c9b8', '--accent-dark': '#9b4628' } as React.CSSProperties
 
 export function AgenticAiLearning() {
   const { studyWeeks, useCases, patchStudyWeek, patchUseCase, toggleTopicItem } = useAgenticAi()

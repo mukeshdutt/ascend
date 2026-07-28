@@ -15,11 +15,13 @@ import './tech-tracker.css'
 type TechInterviewTrackerProps = {
   title?: string
   description?: string
+  tabs?: React.ReactNode
 }
 
 export function TechInterviewTracker({
   title = 'Technical Learning',
   description = 'Coding-interview problems with spaced-repetition revisits.',
+  tabs,
 }: TechInterviewTrackerProps) {
   const { problems, addProblem, updateProblem, deleteProblem } = useProblems()
   const [filters, setFilters] = useState<Filters>(defaultFilters)
@@ -56,6 +58,8 @@ export function TechInterviewTracker({
           <Icon name="plus" size={16} /> Add problem
         </button>
       </section>
+
+      {tabs}
 
       <StatsPanel problems={problems} />
 

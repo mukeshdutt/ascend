@@ -1,0 +1,47 @@
+/* Artifact tab bar (Interview Tracker / Learning Tracker / Problems) */
+.tl-tab-bar { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+.tl-tab-bar button { border: 1px solid #dce5ee; background: #fff; border-radius: 8px; padding: 9px 16px; color: #65728b; font-size: 12px; font-weight: 700; cursor: pointer; transition: all .15s; display: flex; align-items: center; gap: 6px; }
+.tl-tab-bar button:hover { border-color: var(--accent-border); color: var(--accent-dark); }
+.tl-tab-bar button.active { color: var(--accent-dark); background: var(--accent-bg); border-color: var(--accent-border); }
+.tl-tab-count { font-size: 10px; font-weight: 700; background: #eef1f7; color: #65728b; border-radius: 8px; padding: 2px 7px; }
+.tl-tab-bar button.active .tl-tab-count { background: var(--accent); color: #fff; }
+.tech-tracker .tl-tab-bar { margin-top: -6px; }
+
+/* Meta chips under the tab bar */
+.tl-meta { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
+.tl-meta-chip { font-size: 10px; font-weight: 600; color: #8994aa; background: #fff; border: 1px solid #e4e8f0; border-radius: 999px; padding: 3px 10px; }
+
+/* In-progress stat colour (amber, matching the WIP state) */
+.stat-card-val.c-wip { color: #b45309; }
+
+/* Area tabs: ⚡ Active + the four areas */
+.tl-area-tabs { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+.tl-area-tab { border: 1px solid #dce5ee; background: #fff; border-radius: 7px; padding: 8px 13px; color: #65728b; font-size: 12px; font-weight: 700; cursor: pointer; transition: all .15s; display: flex; align-items: center; gap: 6px; }
+.tl-area-tab:hover { border-color: var(--accent-border); color: var(--accent-dark); }
+.tl-area-tab.active { color: var(--accent-dark); background: var(--accent-bg); border-color: var(--accent-border); }
+.tl-area-tab--zap.active { color: #b45309; background: #fff7e6; border-color: #f0d49b; }
+.tl-area-count { font-size: 10px; font-weight: 700; color: #98a3b8; }
+.tl-area-tab.active .tl-area-count { color: inherit; }
+
+/* Pulsing amber dot on phase headers / area tabs with in-progress items */
+.tl-pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; flex-shrink: 0; animation: tl-pulse 1.6s ease-out infinite; }
+@keyframes tl-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, .55); }
+  70% { box-shadow: 0 0 0 7px rgba(245, 158, 11, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+}
+
+.tl-phases { display: flex; flex-direction: column; gap: 8px; }
+.tl-phase-head { display: flex; align-items: center; gap: 8px; }
+
+/* Item rows with three-state checkboxes: empty → ~ in progress → ✓ done */
+.tl-item { display: flex; align-items: center; gap: 10px; padding: 9px 14px; border-top: 1px solid #eff1f5; }
+.tl-item-name { font-size: 12px; font-weight: 600; color: #31405f; }
+.tl-item--done .tl-item-name { color: #98a3b8; text-decoration: line-through; }
+.tl-item--wip .tl-item-name { color: #92400e; }
+.tl-wip-badge { margin-left: auto; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: #b45309; background: #fff7e6; border: 1px solid #f0d49b; border-radius: 999px; padding: 2px 8px; flex-shrink: 0; }
+
+.tl-check { width: 20px; height: 20px; flex-shrink: 0; border-radius: 6px; border: 1.5px solid #ccd4e2; background: #fff; color: transparent; font-size: 12px; font-weight: 800; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .15s; }
+.tl-check:hover { border-color: var(--accent); }
+.tl-check--wip { border-color: #f0b429; background: #fff7e6; color: #b45309; }
+.tl-check--done { border-color: #2ba36b; background: #e7f6ee; color: #199b57; }
