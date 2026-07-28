@@ -1,14 +1,172 @@
 import { useMemo, useState } from 'react'
-import { Modal } from '../../shared/components/Modal'
 import { Icon } from '../../shared/icons/Icon'
 import { useAgenticAi } from './store'
-import { AI_CATEGORIES, AI_STATUS_LABEL, AI_STATUSES, READING_STATUS_LABEL } from './types'
-import type { AiCategory, AiStatus, AiTopic, ReadingStatus } from './types'
+import { AI_PHASES, AI_STATUS_LABEL, AI_STATUSES } from './types'
+import type { AiPhase, AiStatus } from './types'
 import '../react-mastery/react-mastery.css'
-import '../golang-mastery/golang-mastery.css'
 import './agentic-ai.css'
+import '../../shared/mastery-layout.css'
 
-type Form = Omit<AiTopic, 'id'>; const empty = (): Form => ({ category: 'Raw API Fundamentals', title: '', status: 'not-started', resource_link: '', anchor_project: '', notes: '' })
-function Ring({ value, label }: { value: number; label: string }) { return <div className="mastery-ring-wrap"><div className="mastery-ring" style={{ '--value': `${value * 3.6}deg` } as React.CSSProperties}><b>{value}%</b></div><span>{label}</span></div> }
-function TopicModal({ topic, onClose }: { topic: AiTopic | null; onClose: () => void }) { const { addTopic, updateTopic, deleteTopic } = useAgenticAi(); const [form, setForm] = useState<Form>(topic ? { ...topic } : empty()); const set = <K extends keyof Form>(k: K, v: Form[K]) => setForm(f => ({ ...f, [k]: v })); const save = () => { if (!form.title.trim()) return; const value = { ...form, title: form.title.trim() }; if (topic) updateTopic(topic.id, value); else addTopic(value); onClose() }; return <Modal title={topic ? 'Edit learning topic' : 'Add learning topic'} subtitle="Anchor agentic AI learning in real, code-first project work." onClose={onClose} size="lg" footer={<>{topic && <button className="btn-danger" onClick={() => { deleteTopic(topic.id); onClose() }}><Icon name="trash" size={15} /> Delete</button>}<span style={{ flex: 1 }} /><button className="btn-ghost" onClick={onClose}>Cancel</button><button className="btn-primary" onClick={save} disabled={!form.title.trim()}><Icon name="check" size={15} /> Save topic</button></>}><div className="form-grid react-form"><label className="fld span-2"><span>Title</span><input autoFocus value={form.title} onChange={e => set('title', e.target.value)} placeholder="e.g. Implement a raw tool-calling loop" /></label><label className="fld"><span>Category</span><select value={form.category} onChange={e => set('category', e.target.value as AiCategory)}>{AI_CATEGORIES.map(c => <option key={c}>{c}</option>)}</select></label><label className="fld"><span>Status</span><select value={form.status} onChange={e => set('status', e.target.value as AiStatus)}>{AI_STATUSES.map(s => <option key={s} value={s}>{AI_STATUS_LABEL[s]}</option>)}</select></label><label className="fld span-2"><span>Resource link</span><input type="url" value={form.resource_link} onChange={e => set('resource_link', e.target.value)} placeholder="https://..." /></label><label className="fld span-2"><span>Anchor project</span><input value={form.anchor_project} onChange={e => set('anchor_project', e.target.value)} placeholder="e.g. clothing brand agent" /></label><label className="fld span-2"><span>Notes</span><textarea value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Implementation notes and next steps…" /></label></div></Modal> }
-export function AgenticAiLearning() { const { topics, reading, patchTopic, patchReading } = useAgenticAi(); const [view, setView] = useState<'categories' | 'projects'>('categories'); const [query, setQuery] = useState(''); const [collapsed, setCollapsed] = useState<string[]>([]); const [modal, setModal] = useState<AiTopic | 'new' | null>(null); const filtered = useMemo(() => topics.filter(t => `${t.title} ${t.notes} ${t.anchor_project}`.toLowerCase().includes(query.toLowerCase())), [topics, query]); const overall = topics.length ? Math.round(topics.filter(t => t.status === 'mastered').length / topics.length * 100) : 0; const groups = view === 'categories' ? AI_CATEGORIES.map(key => ({ key, rows: filtered.filter(t => t.category === key) })) : [...new Set(filtered.map(t => t.anchor_project.trim() || 'Unanchored'))].map(key => ({ key, rows: filtered.filter(t => (t.anchor_project.trim() || 'Unanchored') === key) })); const toggle = (key: string) => setCollapsed(x => x.includes(key) ? x.filter(v => v !== key) : [...x, key]); return <div className="content react-mastery"><section className="intro"><div><h1>Agentic AI Learning</h1><p>Build from raw API loops to deep framework fluency, tied to real projects.</p></div><button className="btn-primary" onClick={() => setModal('new')}><Icon name="plus" size={16} /> Add topic</button></section><div className="go-view-tabs"><button className={view === 'categories' ? 'active' : ''} onClick={() => setView('categories')}>By category</button><button className={view === 'projects' ? 'active' : ''} onClick={() => setView('projects')}>Anchor projects</button></div><section className="mastery-summary"><Ring value={overall} label="Overall mastered" />{AI_CATEGORIES.map(c => { const rows = topics.filter(t => t.category === c); return <Ring key={c} value={rows.length ? Math.round(rows.filter(t => t.status === 'mastered').length / rows.length * 100) : 0} label={c} /> })}</section><div className="mastery-filters"><label><Icon name="search" size={16} /><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search topics, notes, or anchor project" /></label></div><div className="mastery-groups">{groups.map(({ key, rows }) => { const isCollapsed = collapsed.includes(key); return <section className="mastery-group" key={key}><button className="group-head" onClick={() => toggle(key)}><Icon name={isCollapsed ? 'chevronRight' : 'chevronDown'} size={16} /><span>{key}</span><em>{rows.length} topics</em></button>{!isCollapsed && <div className="mastery-table-wrap"><table className="mastery-table"><thead><tr><th>Topic</th><th>Status</th><th>{view === 'categories' ? 'Anchor project' : 'Category'}</th><th>Notes</th><th></th></tr></thead><tbody>{rows.map(t => <tr key={t.id}><td><button onClick={() => setModal(t)} className="react-topic-name">{t.title}</button>{t.resource_link && <a href={t.resource_link} target="_blank" rel="noreferrer">Resource ↗</a>}</td><td><select className={`react-status ${t.status}`} value={t.status} onChange={e => patchTopic(t.id, { status: e.target.value as AiStatus })}>{AI_STATUSES.map(s => <option key={s} value={s}>{AI_STATUS_LABEL[s]}</option>)}</select></td><td>{view === 'categories' ? <input className="inline-input" value={t.anchor_project} onChange={e => patchTopic(t.id, { anchor_project: e.target.value })} placeholder="Add project" /> : t.category}</td><td><input className="inline-input" value={t.notes} onChange={e => patchTopic(t.id, { notes: e.target.value })} placeholder="Add notes" /></td><td><button className="row-edit" onClick={() => setModal(t)}><Icon name="edit" size={15} /></button></td></tr>)}{rows.length === 0 && <tr><td colSpan={5} className="mastery-empty">No matching topics in this group.</td></tr>}</tbody></table></div>}</section> })}</div><section className="reading-list"><div><h2>Reading list</h2><p>Foundations worth returning to while you build.</p></div>{reading.map(item => <div className="reading-row" key={item.id}><strong>{item.title}</strong><select className="react-status" value={item.status} onChange={e => patchReading(item.id, { status: e.target.value as ReadingStatus })}>{(Object.keys(READING_STATUS_LABEL) as ReadingStatus[]).map(s => <option key={s} value={s}>{READING_STATUS_LABEL[s]}</option>)}</select><input className="inline-input" value={item.notes} onChange={e => patchReading(item.id, { notes: e.target.value })} placeholder="Reading notes" /></div>)}</section>{modal !== null && <TopicModal topic={modal === 'new' ? null : modal} onClose={() => setModal(null)} />}</div> }
+const ACCENT = { '--accent': '#7851e8', '--accent-bg': '#f0ecfd', '--accent-border': '#c4b0f5', '--accent-dark': '#5a38c0' } as React.CSSProperties
+
+export function AgenticAiLearning() {
+  const { studyWeeks, useCases, patchStudyWeek, patchUseCase, toggleTopicItem } = useAgenticAi()
+  const [view, setView] = useState<'study' | 'usecases'>('study')
+  const [activePhase, setActivePhase] = useState<AiPhase>(AI_PHASES[0])
+  const [query, setQuery] = useState('')
+  const [expanded, setExpanded] = useState<string[]>([])
+
+  const toggleExpand = (id: string) =>
+    setExpanded(x => x.includes(id) ? x.filter(v => v !== id) : [...x, id])
+
+  const totalStudy = studyWeeks.length
+  const doneStudy = studyWeeks.filter(w => w.status === 'done').length
+  const totalUseCases = useCases.length
+  const doneUseCases = useCases.filter(u => u.status === 'done').length
+  const overallPct = (totalStudy + totalUseCases) > 0
+    ? Math.round((doneStudy + doneUseCases) / (totalStudy + totalUseCases) * 100)
+    : 0
+
+  const phaseStudySummary = useMemo(() =>
+    AI_PHASES.map(phase => {
+      const items = studyWeeks.filter(w => w.phase === phase)
+      const done = items.filter(w => w.status === 'done').length
+      return { phase, total: items.length, pct: items.length ? Math.round(done / items.length * 100) : 0 }
+    }), [studyWeeks])
+
+  const phaseUseCaseSummary = useMemo(() =>
+    AI_PHASES.map(phase => {
+      const items = useCases.filter(u => u.phase === phase)
+      const done = items.filter(u => u.status === 'done').length
+      return { phase, total: items.length, pct: items.length ? Math.round(done / items.length * 100) : 0 }
+    }), [useCases])
+
+  const leftItems = view === 'study' ? phaseStudySummary : phaseUseCaseSummary
+
+  const filteredStudyWeeks = useMemo(() =>
+    studyWeeks.filter(w =>
+      w.phase === activePhase &&
+      `${w.weekTitle} ${w.topics.map(t => t.text).join(' ')}`.toLowerCase().includes(query.toLowerCase())),
+    [studyWeeks, activePhase, query])
+
+  const filteredUseCases = useMemo(() =>
+    useCases.filter(u =>
+      u.phase === activePhase &&
+      `${u.title} ${u.description}`.toLowerCase().includes(query.toLowerCase())),
+    [useCases, activePhase, query])
+
+  const switchView = (v: 'study' | 'usecases') => {
+    setView(v)
+    setActivePhase(AI_PHASES[0])
+    setQuery('')
+    setExpanded([])
+  }
+
+  return (
+    <div className="content mastery-v2" style={ACCENT}>
+      <section className="intro">
+        <div>
+          <h1>Agentic AI Learning</h1>
+          <p>18-week roadmap · E-Commerce Track · LangChain + LangGraph</p>
+        </div>
+      </section>
+
+      <div className="mastery-stats">
+        <div className="stat-card"><div className="stat-card-val">{totalStudy}</div><div className="stat-card-lbl">Study Weeks</div></div>
+        <div className="stat-card"><div className="stat-card-val c-mastered">{doneStudy}</div><div className="stat-card-lbl">Weeks Done</div></div>
+        <div className="stat-card"><div className="stat-card-val">{totalUseCases}</div><div className="stat-card-lbl">Use Cases</div></div>
+        <div className="stat-card"><div className="stat-card-val c-mastered">{doneUseCases}</div><div className="stat-card-lbl">Use Cases Done</div></div>
+        <div className="stat-card stat-accent"><div className="stat-card-val">{overallPct}%</div><div className="stat-card-lbl">Overall Progress</div></div>
+      </div>
+
+      <div className="mastery-view-tabs">
+        <button className={view === 'study' ? 'active' : ''} onClick={() => switchView('study')}>Study Topics</button>
+        <button className={view === 'usecases' ? 'active' : ''} onClick={() => switchView('usecases')}>Use Cases</button>
+      </div>
+
+      <div className="mastery-filters">
+        <label><Icon name="search" size={16} /><input value={query} onChange={e => setQuery(e.target.value)} placeholder={view === 'study' ? 'Search topics or weeks' : 'Search use cases'} /></label>
+      </div>
+
+      <div className="mastery-layout">
+        <aside className="mastery-left">
+          {leftItems.map(({ phase, total, pct }) => (
+            <button key={phase} className={`cat-item ${activePhase === phase ? 'active' : ''}`} onClick={() => setActivePhase(phase)}>
+              <div className="cat-item-hd">
+                <span className="cat-item-name">{phase}</span>
+                <span className="cat-item-cnt">{total}</span>
+              </div>
+              <div className="cat-prog-track"><div className="cat-prog-fill" style={{ width: `${pct}%` }} /></div>
+              <span className="cat-pct">{pct}% done</span>
+            </button>
+          ))}
+        </aside>
+
+        <div className="mastery-right">
+          {view === 'study' && (
+            filteredStudyWeeks.length === 0
+              ? <div className="mastery-right-empty">No weeks match your search.</div>
+              : filteredStudyWeeks.map(week => (
+                <div key={week.id} className="phase-section">
+                  <div className="agentic-row-head" onClick={() => toggleExpand(week.id)}>
+                    <Icon name={expanded.includes(week.id) ? 'chevronDown' : 'chevronRight'} size={14} />
+                    <span className="agentic-row-title">{week.weekTitle}</span>
+                    <em>{week.topics.length} topics</em>
+                    <select
+                      className={`react-status ${week.status}`}
+                      value={week.status}
+                      onClick={e => e.stopPropagation()}
+                      onChange={e => patchStudyWeek(week.id, e.target.value as AiStatus)}
+                    >
+                      {AI_STATUSES.map(s => <option key={s} value={s}>{AI_STATUS_LABEL[s]}</option>)}
+                    </select>
+                  </div>
+                  {expanded.includes(week.id) && (
+                    <ul className="agentic-topic-list">
+                      {week.topics.map((t, i) => (
+                        <li key={i} className={t.done ? 'done' : ''}>
+                          <label>
+                            <input
+                              type="checkbox"
+                              checked={t.done}
+                              onChange={() => toggleTopicItem(week.id, i)}
+                            />
+                            <span>{t.text}</span>
+                          </label>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))
+          )}
+
+          {view === 'usecases' && (
+            filteredUseCases.length === 0
+              ? <div className="mastery-right-empty">No use cases match your search.</div>
+              : filteredUseCases.map(uc => (
+                <div key={uc.id} className="phase-section">
+                  <div className="agentic-row-head" onClick={() => toggleExpand(uc.id)}>
+                    <Icon name={expanded.includes(uc.id) ? 'chevronDown' : 'chevronRight'} size={14} />
+                    <span className="agentic-row-title">{uc.title}</span>
+                    <em>Week {uc.weekNum}</em>
+                    <select
+                      className={`react-status ${uc.status}`}
+                      value={uc.status}
+                      onClick={e => e.stopPropagation()}
+                      onChange={e => patchUseCase(uc.id, e.target.value as AiStatus)}
+                    >
+                      {AI_STATUSES.map(s => <option key={s} value={s}>{AI_STATUS_LABEL[s]}</option>)}
+                    </select>
+                  </div>
+                  {expanded.includes(uc.id) && (
+                    <p className="agentic-usecase-desc">{uc.description}</p>
+                  )}
+                </div>
+              ))
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}

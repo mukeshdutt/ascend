@@ -1,9 +1,67 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useCallback, useContext, useMemo, useState } from 'react'
+import { createContext, useContext, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import { seedJavaTopics } from './data'
-import type { JavaTopic } from './types'
-type NewTopic = Omit<JavaTopic, 'id'>; type Value = { topics: JavaTopic[]; addTopic: (t: NewTopic) => void; updateTopic: (id: string, t: NewTopic) => void; patchTopic: (id: string, p: Partial<JavaTopic>) => void; deleteTopic: (id: string) => void }; const Context = createContext<Value | null>(null); let ids = 0
-export function JavaStudyProvider({ children }: { children: ReactNode }) { const [topics, setTopics] = useState(seedJavaTopics); const addTopic = useCallback((t: NewTopic) => setTopics(x => [{ ...t, id: `java-${Date.now().toString(36)}-${ids++}` }, ...x]), []); const updateTopic = useCallback((id: string, t: NewTopic) => setTopics(x => x.map(v => v.id === id ? { ...t, id } : v)), []); const patchTopic = useCallback((id: string, p: Partial<JavaTopic>) => setTopics(x => x.map(v => v.id === id ? { ...v, ...p } : v)), []); const deleteTopic = useCallback((id: string) => setTopics(x => x.filter(v => v.id !== id)), []); const value = useMemo(() => ({ topics, addTopic, updateTopic, patchTopic, deleteTopic }), [topics, addTopic, updateTopic, patchTopic, deleteTopic]); return <Context.Provider value={value}>{children}</Context.Provider> }
-export function useJavaStudy() { const value = useContext(Context); if (!value) throw new Error('useJavaStudy must be used inside JavaStudyProvider'); return value }
-export function useJavaStudySummary() { const { topics } = useJavaStudy(); return useMemo(() => { const done = topics.filter(t => t.status === 'mastered').length; const active = topics.filter(t => t.status === 'learning' || t.status === 'practiced').length; return { progress: topics.length ? Math.round(done / topics.length * 100) : 0, done, active, left: topics.length - done - active } }, [topics]) }
+import { seedJavaWeeks } from './data'
+import type { JavaWeek, JavaWeekStatus } from './types'
+
+type Value = {
+  weeks: JavaWeek[]
+  patchWeek: (id: string, patch: Partial<JavaWeek>) => void
+  toggleTask: (weekId: string, sectionName: string, taskId: string) => void
+}
+
+const Context = createContext<Value | null>(null)
+
+export function JavaStudyProvider({ children }: { children: ReactNode }) {
+  const [weeks, setWeeks] = useState<JavaWeek[]>(seedJavaWeeks)
+
+  const patchWeek = (id: string, patch: Partial<JavaWeek>) =>
+    setWeeks(prev => prev.map(w => w.id === id ? { ...w, ...patch } : w))
+
+  const toggleTask = (weekId: string, sectionName: string, taskId: string) =>
+    setWeeks(prev => prev.map(w => {
+      if (w.id !== weekId) return w
+      return {
+        ...w,
+        sections: w.sections.map(s =>
+          s.name !== sectionName ? s : {
+            ...s,
+            tasks: s.tasks.map(t => t.id === taskId ? { ...t, done: !t.done } : t),
+          }
+        ),
+      }
+    }))
+
+  const value = useMemo(() => ({ weeks, patchWeek, toggleTask }), [weeks])
+  return <Context.Provider value={value}>{children}</Context.Provider>
+}
+
+export function useJavaStudy() {
+  const ctx = useContext(Context)
+  if (!ctx) throw new Error('useJavaStudy must be used inside JavaStudyProvider')
+  return ctx
+}
+
+export function useJavaStudySummary() {
+  const { weeks } = useJavaStudy()
+  return useMemo(() => {
+    const totalTasks = weeks.reduce((n, w) => n + w.sections.reduce((m, s) => m + s.tasks.length, 0), 0)
+    const doneTasks = weeks.reduce((n, w) => n + w.sections.reduce((m, s) => m + s.tasks.filter(t => t.done).length, 0), 0)
+    const weeksDone = weeks.filter(w => w.status === 'done').length
+    const weeksActive = weeks.filter(w => w.status === 'in-progress').length
+    return {
+      progress: totalTasks > 0 ? Math.round(doneTasks / totalTasks * 100) : 0,
+      done: weeksDone,
+      active: weeksActive,
+      left: weeks.length - weeksDone,
+    }
+  }, [weeks])
+}
+
+export function deriveWeekStatus(week: JavaWeek): JavaWeekStatus {
+  const total = week.sections.reduce((n, s) => n + s.tasks.length, 0)
+  const done = week.sections.reduce((n, s) => n + s.tasks.filter(t => t.done).length, 0)
+  if (done === 0) return 'not-started'
+  if (done === total) return 'done'
+  return 'in-progress'
+}

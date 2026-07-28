@@ -1,13 +1,153 @@
-import { useMemo, useState } from 'react'
-import { Modal } from '../../shared/components/Modal'
-import { Icon } from '../../shared/icons/Icon'
-import { useJavaStudy } from './store'
-import { JAVA_CATEGORIES, JAVA_STATUS_LABEL, JAVA_STATUSES } from './types'
-import type { JavaCategory, JavaStatus, JavaTopic } from './types'
-import '../react-mastery/react-mastery.css'
+import { useState } from 'react'
+import { useJavaStudy, deriveWeekStatus } from './store'
+import { JAVA_WEEK_STATUSES, JAVA_WEEK_STATUS_LABEL } from './types'
+import type { JavaWeek, JavaWeekStatus, JavaTag } from './types'
+import '../../shared/mastery-layout.css'
+import './java-study-tracker.css'
 
-type Form = Omit<JavaTopic, 'id'>
-const empty = (): Form => ({ category: 'Core Java', title: '', status: 'not-started', resource_link: '', gcp_service_involved: '', notes: '' })
-function Ring({ value, label }: { value: number; label: string }) { return <div className="mastery-ring-wrap"><div className="mastery-ring" style={{ '--value': `${value * 3.6}deg` } as React.CSSProperties}><b>{value}%</b></div><span>{label}</span></div> }
-function TopicModal({ topic, onClose }: { topic: JavaTopic | null; onClose: () => void }) { const { addTopic, updateTopic, deleteTopic } = useJavaStudy(); const [form, setForm] = useState<Form>(topic ? { ...topic } : empty()); const set = <K extends keyof Form>(k: K, v: Form[K]) => setForm(f => ({ ...f, [k]: v })); const save = () => { if (!form.title.trim()) return; const value = { ...form, title: form.title.trim() }; if (topic) updateTopic(topic.id, value); else addTopic(value); onClose() }; return <Modal title={topic ? 'Edit Java topic' : 'Add Java topic'} subtitle="Keep deep Java study material connected to the GCP services it supports." onClose={onClose} size="lg" footer={<>{topic && <button className="btn-danger" onClick={() => { deleteTopic(topic.id); onClose() }}><Icon name="trash" size={15} /> Delete</button>}<span style={{ flex: 1 }} /><button className="btn-ghost" onClick={onClose}>Cancel</button><button className="btn-primary" onClick={save} disabled={!form.title.trim()}><Icon name="check" size={15} /> Save topic</button></>}><div className="form-grid react-form"><label className="fld span-2"><span>Title</span><input autoFocus value={form.title} onChange={e => set('title', e.target.value)} placeholder="e.g. Java memory model" /></label><label className="fld"><span>Category</span><select value={form.category} onChange={e => set('category', e.target.value as JavaCategory)}>{JAVA_CATEGORIES.map(c => <option key={c}>{c}</option>)}</select></label><label className="fld"><span>Status</span><select value={form.status} onChange={e => set('status', e.target.value as JavaStatus)}>{JAVA_STATUSES.map(s => <option key={s} value={s}>{JAVA_STATUS_LABEL[s]}</option>)}</select></label><label className="fld span-2"><span>Resource link</span><input type="url" value={form.resource_link} onChange={e => set('resource_link', e.target.value)} placeholder="https://..." /></label><label className="fld span-2"><span>GCP service involved</span><input value={form.gcp_service_involved} onChange={e => set('gcp_service_involved', e.target.value)} placeholder="e.g. Cloud Run, Pub/Sub, BigQuery" /></label><label className="fld span-2"><span>Notes</span><textarea value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Study takeaways…" /></label></div></Modal> }
-export function JavaStudyTracker() { const { topics, patchTopic } = useJavaStudy(); const [category, setCategory] = useState<'all' | JavaCategory>('all'); const [status, setStatus] = useState<'all' | JavaStatus>('all'); const [service, setService] = useState('all'); const [query, setQuery] = useState(''); const [collapsed, setCollapsed] = useState<JavaCategory[]>([]); const [modal, setModal] = useState<JavaTopic | 'new' | null>(null); const services = useMemo(() => [...new Set(topics.map(t => t.gcp_service_involved.trim()).filter(Boolean))].sort(), [topics]); const filtered = useMemo(() => topics.filter(t => (category === 'all' || t.category === category) && (status === 'all' || t.status === status) && (service === 'all' || t.gcp_service_involved === service) && `${t.title} ${t.notes}`.toLowerCase().includes(query.toLowerCase())), [topics, category, status, service, query]); const overall = topics.length ? Math.round(topics.filter(t => t.status === 'mastered').length / topics.length * 100) : 0; const toggle = (c: JavaCategory) => setCollapsed(x => x.includes(c) ? x.filter(v => v !== c) : [...x, c]); return <div className="content react-mastery"><section className="intro"><div><h1>Java Study Tracker</h1><p>Deep Java and GCP study material for senior cloud engineering work.</p></div><button className="btn-primary" onClick={() => setModal('new')}><Icon name="plus" size={16} /> Add topic</button></section><section className="mastery-summary"><Ring value={overall} label="Overall mastered" />{JAVA_CATEGORIES.map(c => { const rows = topics.filter(t => t.category === c); return <Ring key={c} value={rows.length ? Math.round(rows.filter(t => t.status === 'mastered').length / rows.length * 100) : 0} label={c} /> })}</section><div className="mastery-filters"><label><Icon name="search" size={16} /><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search title or notes" /></label><select value={category} onChange={e => setCategory(e.target.value as typeof category)}><option value="all">All categories</option>{JAVA_CATEGORIES.map(c => <option key={c}>{c}</option>)}</select><select value={status} onChange={e => setStatus(e.target.value as typeof status)}><option value="all">All statuses</option>{JAVA_STATUSES.map(s => <option key={s} value={s}>{JAVA_STATUS_LABEL[s]}</option>)}</select><select value={service} onChange={e => setService(e.target.value)}><option value="all">All GCP services</option>{services.map(s => <option key={s}>{s}</option>)}</select></div><div className="mastery-groups">{JAVA_CATEGORIES.map(c => { const rows = filtered.filter(t => t.category === c); const isCollapsed = collapsed.includes(c); return <section className="mastery-group" key={c}><button className="group-head" onClick={() => toggle(c)}><Icon name={isCollapsed ? 'chevronRight' : 'chevronDown'} size={16} /><span>{c}</span><em>{rows.length} topics</em></button>{!isCollapsed && <div className="mastery-table-wrap"><table className="mastery-table"><thead><tr><th>Topic</th><th>Status</th><th>GCP service involved</th><th>Notes</th><th></th></tr></thead><tbody>{rows.map(t => <tr key={t.id}><td><button onClick={() => setModal(t)} className="react-topic-name">{t.title}</button>{t.resource_link && <a href={t.resource_link} target="_blank" rel="noreferrer">Resource ↗</a>}</td><td><select className={`react-status ${t.status}`} value={t.status} onChange={e => patchTopic(t.id, { status: e.target.value as JavaStatus })}>{JAVA_STATUSES.map(s => <option key={s} value={s}>{JAVA_STATUS_LABEL[s]}</option>)}</select></td><td><input className="inline-input" value={t.gcp_service_involved} onChange={e => patchTopic(t.id, { gcp_service_involved: e.target.value })} placeholder="Optional GCP service" /></td><td><input className="inline-input" value={t.notes} onChange={e => patchTopic(t.id, { notes: e.target.value })} placeholder="Add notes" /></td><td><button className="row-edit" onClick={() => setModal(t)}><Icon name="edit" size={15} /></button></td></tr>)}{rows.length === 0 && <tr><td colSpan={5} className="mastery-empty">No matching topics in this category.</td></tr>}</tbody></table></div>}</section> })}</div>{modal !== null && <TopicModal topic={modal === 'new' ? null : modal} onClose={() => setModal(null)} />}</div> }
+const ACCENT = { '--accent': '#c96442', '--accent-bg': '#fdf3ef', '--accent-border': '#f0c9b8', '--accent-dark': '#9b4628' } as React.CSSProperties
+
+const STATUS_DOT: Record<JavaWeekStatus, string> = {
+  'not-started': '○',
+  'in-progress': '◑',
+  done: '●',
+}
+
+export function JavaStudyTracker() {
+  const { weeks, patchWeek, toggleTask } = useJavaStudy()
+  const [selectedId, setSelectedId] = useState<string>(weeks[0].id)
+
+  const selected = weeks.find(w => w.id === selectedId) ?? weeks[0]
+  const weeksDone = weeks.filter(w => w.status === 'done').length
+  const weeksInProgress = weeks.filter(w => w.status === 'in-progress').length
+  const totalTasks = weeks.reduce((n, w) => n + w.sections.reduce((m, s) => m + s.tasks.length, 0), 0)
+  const doneTasks = weeks.reduce((n, w) => n + w.sections.reduce((m, s) => m + s.tasks.filter(t => t.done).length, 0), 0)
+  const pct = totalTasks > 0 ? Math.round(doneTasks / totalTasks * 100) : 0
+
+  return (
+    <div className="content mastery-v2" style={ACCENT}>
+      <section className="intro">
+        <div>
+          <h1>Java Interview Prep</h1>
+          <p>10-week tracker covering fundamentals, Spring, Kafka, microservices, and cloud deployment.</p>
+        </div>
+      </section>
+
+      <div className="mastery-stats">
+        <div className="stat-card"><div className="stat-card-val">{weeks.length}</div><div className="stat-card-lbl">Total Weeks</div></div>
+        <div className="stat-card"><div className="stat-card-val c-mastered">{weeksDone}</div><div className="stat-card-lbl">Done</div></div>
+        <div className="stat-card"><div className="stat-card-val c-progress">{weeksInProgress}</div><div className="stat-card-lbl">In Progress</div></div>
+        <div className="stat-card"><div className="stat-card-val">{totalTasks}</div><div className="stat-card-lbl">Total Tasks</div></div>
+        <div className="stat-card stat-accent">
+          <div className="stat-card-val">{pct}%</div>
+          <div className="stat-card-lbl">Tasks Done</div>
+        </div>
+      </div>
+
+      <div className="mastery-layout">
+        <aside className="mastery-left" style={{ padding: 0, width: 300 }}>
+          <div className="java-weeks">
+            {weeks.map(w => {
+              const status = deriveWeekStatus(w)
+              const wTotal = w.sections.reduce((n, s) => n + s.tasks.length, 0)
+              const wDone = w.sections.reduce((n, s) => n + s.tasks.filter(t => t.done).length, 0)
+              return (
+                <div
+                  key={w.id}
+                  className={`java-week-row ${status} ${selectedId === w.id ? 'selected' : ''}`}
+                  onClick={() => setSelectedId(w.id)}
+                >
+                  <div className="java-week-num">W{w.week}</div>
+                  <div className="java-week-body">
+                    <div className="java-week-title">{w.title}</div>
+                    <div className="java-week-meta">
+                      <span className="java-week-progress">{wDone}/{wTotal} tasks</span>
+                      <span className={`java-week-status-pill ${status}`}>
+                        {STATUS_DOT[status]} {JAVA_WEEK_STATUS_LABEL[status]}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </aside>
+
+        <div className="mastery-right" style={{ padding: 0 }}>
+          <WeekDetail
+            week={selected}
+            onPatch={(p) => patchWeek(selected.id, p)}
+            onToggleTask={(sectionName, taskId) => toggleTask(selected.id, sectionName, taskId)}
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+type WeekDetailProps = {
+  week: JavaWeek
+  onPatch: (p: Partial<JavaWeek>) => void
+  onToggleTask: (sectionName: string, taskId: string) => void
+}
+
+function WeekDetail({ week, onPatch, onToggleTask }: WeekDetailProps) {
+  return (
+    <div className="java-detail">
+      <div className="java-detail-header">
+        <div>
+          <div className="java-detail-week-label">WEEK {week.week} OF 10</div>
+          <div className="java-detail-title">{week.title}</div>
+          <div className="java-detail-desc">{week.description}</div>
+        </div>
+        <select
+          className="java-status-select"
+          value={week.status}
+          onChange={e => onPatch({ status: e.target.value as JavaWeekStatus })}
+        >
+          {JAVA_WEEK_STATUSES.map(s => (
+            <option key={s} value={s}>{JAVA_WEEK_STATUS_LABEL[s]}</option>
+          ))}
+        </select>
+      </div>
+
+      {week.sections.map(section => (
+        <div key={section.name} className="java-section">
+          <div className="java-section-name">{section.name}</div>
+          {section.tasks.map(task => (
+            <div key={task.id} className="java-task-row">
+              <input
+                type="checkbox"
+                className="java-task-checkbox"
+                checked={task.done}
+                onChange={() => onToggleTask(section.name, task.id)}
+                id={task.id}
+              />
+              <label
+                htmlFor={task.id}
+                className={`java-task-title ${task.done ? 'done' : ''}`}
+              >
+                {task.title}
+              </label>
+              <TagBadge tag={task.tag} />
+            </div>
+          ))}
+        </div>
+      ))}
+
+      <div>
+        <div className="java-detail-notes-label">Notes</div>
+        <textarea
+          className="java-detail-notes"
+          placeholder="Add notes, links, or observations for this week…"
+          value={week.notes}
+          onChange={e => onPatch({ notes: e.target.value })}
+        />
+      </div>
+    </div>
+  )
+}
+
+function TagBadge({ tag }: { tag: JavaTag }) {
+  return <span className={`java-tag ${tag}`}>{tag}</span>
+}

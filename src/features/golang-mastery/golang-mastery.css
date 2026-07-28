@@ -1,1 +1,39 @@
 .go-view-tabs { display: flex; gap: 6px; margin: 18px 0 -7px; }.go-view-tabs button { border: 1px solid #dce5ee; background: #fff; border-radius: 7px; padding: 7px 11px; color: #65728b; font-size: 12px; font-weight: 700; }.go-view-tabs button.active { color: #167a82; background: #e9faf9; border-color: #a9dedc; }.concurrency-hint { display: block; color: #8591a7; font-size: 10px; font-weight: 600; margin-top: 2px; }
+
+/* ── Roadmap & Weekly Plan meta bar ──────────────────────────────────────── */
+.roadmap-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+.roadmap-meta-stat { font-size: 12px; color: #65728b; }
+.roadmap-meta-stat strong { color: #2d3a55; font-weight: 700; }
+.roadmap-meta-sep { color: #c5d0e0; font-size: 12px; }
+.roadmap-meta-tip { color: #98a3b8; font-style: italic; }
+.roadmap-tip { margin-top: 16px; background: #f8fbff; border: 1px solid #e0eaf5; border-radius: 8px; padding: 12px 16px; font-size: 12px; color: #65728b; line-height: 1.6; }
+
+/* ── Use-case cards (Roadmap tab) ────────────────────────────────────────── */
+.uc-card { background: #fff; border: 1px solid #e4e8f0; border-left: 3px solid var(--accent); border-radius: 8px; padding: 12px 14px; cursor: pointer; transition: background .15s; margin-bottom: 8px; user-select: none; }
+.uc-card:hover { background: #f5fafb; }
+.uc-card--open { background: #f5fafb; }
+.uc-card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.uc-card-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.uc-card-id { font-size: 10px; font-family: monospace; color: var(--accent); font-weight: 700; flex-shrink: 0; opacity: .8; }
+.uc-card-title { font-size: 13px; font-weight: 700; color: #31405f; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.uc-card-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.uc-badge { font-size: 10px; font-weight: 700; border: 1px solid; border-radius: 4px; padding: 2px 7px; font-family: monospace; }
+.uc-badge--cloud { background: rgba(0,150,199,0.10); color: #0077a3; border-color: rgba(0,150,199,0.35); }
+.uc-chevron { font-size: 12px; color: #98a3b8; }
+.uc-card-body { margin-top: 10px; padding-top: 10px; border-top: 1px solid #eff1f5; }
+.uc-desc { font-size: 12px; color: #4e5e7a; line-height: 1.6; margin: 0 0 10px; }
+.uc-tags-row { margin-bottom: 8px; }
+.uc-tags-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #98a3b8; display: block; margin-bottom: 4px; }
+.uc-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.uc-tag { font-size: 10px; font-family: monospace; border: 1px solid; border-radius: 4px; padding: 1px 6px; }
+.uc-tag--stack { color: #2a5db0; background: rgba(42,93,176,.08); border-color: rgba(42,93,176,.25); }
+.uc-tag--concept { color: var(--accent-dark, var(--accent)); background: var(--accent-bg); border-color: var(--accent-border); }
+.uc-tag--cloud { color: #0077a3; background: rgba(0,150,199,0.10); border-color: rgba(0,150,199,0.35); }
+
+/* ── Weekly Plan (6-Week tab) ────────────────────────────────────────────── */
+.week-section-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: #98a3b8; margin-bottom: 8px; }
+.week-topics-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.week-topics-list li { font-size: 12px; color: #31405f; padding: 8px 12px; background: #f8fbff; border: 1px solid #e9eef7; border-radius: 6px; line-height: 1.5; }
+.week-usecases-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.week-usecases-list li { font-size: 12px; color: #31405f; display: flex; align-items: flex-start; gap: 8px; padding: 8px 12px; background: var(--accent-bg); border: 1px solid var(--accent-border); border-radius: 6px; line-height: 1.5; }
+.week-uc-bullet { color: var(--accent); font-size: 11px; flex-shrink: 0; margin-top: 1px; }

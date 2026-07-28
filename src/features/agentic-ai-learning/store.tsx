@@ -1,9 +1,46 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useCallback, useContext, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import { seedAiTopics, seedReading } from './data'
-import type { AiTopic, ReadingItem } from './types'
-type NewTopic = Omit<AiTopic, 'id'>; type Value = { topics: AiTopic[]; reading: ReadingItem[]; addTopic: (t: NewTopic) => void; updateTopic: (id: string, t: NewTopic) => void; patchTopic: (id: string, p: Partial<AiTopic>) => void; deleteTopic: (id: string) => void; patchReading: (id: string, p: Partial<ReadingItem>) => void }; const Context = createContext<Value | null>(null); let ids = 0
-export function AgenticAiProvider({ children }: { children: ReactNode }) { const [topics, setTopics] = useState(seedAiTopics); const [reading, setReading] = useState(seedReading); const addTopic = useCallback((t: NewTopic) => setTopics(x => [{ ...t, id: `ai-${Date.now().toString(36)}-${ids++}` }, ...x]), []); const updateTopic = useCallback((id: string, t: NewTopic) => setTopics(x => x.map(v => v.id === id ? { ...t, id } : v)), []); const patchTopic = useCallback((id: string, p: Partial<AiTopic>) => setTopics(x => x.map(v => v.id === id ? { ...v, ...p } : v)), []); const deleteTopic = useCallback((id: string) => setTopics(x => x.filter(v => v.id !== id)), []); const patchReading = useCallback((id: string, p: Partial<ReadingItem>) => setReading(x => x.map(v => v.id === id ? { ...v, ...p } : v)), []); const value = useMemo(() => ({ topics, reading, addTopic, updateTopic, patchTopic, deleteTopic, patchReading }), [topics, reading, addTopic, updateTopic, patchTopic, deleteTopic, patchReading]); return <Context.Provider value={value}>{children}</Context.Provider> }
-export function useAgenticAi() { const value = useContext(Context); if (!value) throw new Error('useAgenticAi must be used inside AgenticAiProvider'); return value }
-export function useAgenticAiSummary() { const { topics } = useAgenticAi(); return useMemo(() => { const done = topics.filter(t => t.status === 'mastered').length; const active = topics.filter(t => t.status === 'learning' || t.status === 'practiced').length; return { progress: topics.length ? Math.round(done / topics.length * 100) : 0, done, active, left: topics.length - done - active } }, [topics]) }
+import { seedStudyWeeks, seedUseCases } from './data'
+import type { StudyWeek, UseCase, AiStatus } from './types'
+
+type Value = {
+  studyWeeks: StudyWeek[]
+  useCases: UseCase[]
+  patchStudyWeek: (id: string, status: AiStatus) => void
+  patchUseCase: (id: string, status: AiStatus) => void
+  toggleTopicItem: (weekId: string, topicIndex: number) => void
+}
+
+const Context = createContext<Value | null>(null)
+
+export function AgenticAiProvider({ children }: { children: ReactNode }) {
+  const [studyWeeks, setStudyWeeks] = useState(seedStudyWeeks)
+  const [useCases, setUseCases] = useState(seedUseCases)
+  const patchStudyWeek = useCallback((id: string, status: AiStatus) =>
+    setStudyWeeks(x => x.map(v => v.id === id ? { ...v, status } : v)), [])
+  const patchUseCase = useCallback((id: string, status: AiStatus) =>
+    setUseCases(x => x.map(v => v.id === id ? { ...v, status } : v)), [])
+  const toggleTopicItem = useCallback((weekId: string, topicIndex: number) =>
+    setStudyWeeks(x => x.map(v => v.id === weekId
+      ? { ...v, topics: v.topics.map((t, i) => i === topicIndex ? { ...t, done: !t.done } : t) }
+      : v)), [])
+  const value = useMemo(() => ({ studyWeeks, useCases, patchStudyWeek, patchUseCase, toggleTopicItem }), [studyWeeks, useCases, patchStudyWeek, patchUseCase, toggleTopicItem])
+  return <Context.Provider value={value}>{children}</Context.Provider>
+}
+
+export function useAgenticAi() {
+  const value = useContext(Context)
+  if (!value) throw new Error('useAgenticAi must be used inside AgenticAiProvider')
+  return value
+}
+
+export function useAgenticAiSummary() {
+  const { studyWeeks, useCases } = useAgenticAi()
+  return useMemo(() => {
+    const all = [...studyWeeks, ...useCases]
+    const done = all.filter(t => t.status === 'done').length
+    const active = all.filter(t => t.status === 'in-progress').length
+    return { progress: all.length ? Math.round(done / all.length * 100) : 0, done, active, left: all.length - done - active }
+  }, [studyWeeks, useCases])
+}

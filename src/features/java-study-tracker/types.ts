@@ -1,6 +1,32 @@
-export const JAVA_CATEGORIES = ['Core Java', 'Concurrency & JVM', 'Spring/Spring Boot', 'GCP Services', 'Testing', 'Performance & Profiling'] as const
-export type JavaCategory = (typeof JAVA_CATEGORIES)[number]
-export const JAVA_STATUSES = ['not-started', 'learning', 'practiced', 'mastered'] as const
-export type JavaStatus = (typeof JAVA_STATUSES)[number]
-export type JavaTopic = { id: string; category: JavaCategory; title: string; status: JavaStatus; resource_link: string; gcp_service_involved: string; notes: string }
-export const JAVA_STATUS_LABEL: Record<JavaStatus, string> = { 'not-started': 'Not started', learning: 'Learning', practiced: 'Practiced', mastered: 'Mastered' }
+export const JAVA_WEEK_STATUSES = ['not-started', 'in-progress', 'done'] as const
+export type JavaWeekStatus = (typeof JAVA_WEEK_STATUSES)[number]
+export const JAVA_WEEK_STATUS_LABEL: Record<JavaWeekStatus, string> = {
+  'not-started': 'Not Started',
+  'in-progress': 'In Progress',
+  done: 'Done',
+}
+
+export const JAVA_TAGS = ['concept', 'code', 'project', 'cloud', 'interview'] as const
+export type JavaTag = (typeof JAVA_TAGS)[number]
+
+export type JavaTask = {
+  id: string
+  title: string
+  tag: JavaTag
+  done: boolean
+}
+
+export type JavaSection = {
+  name: string
+  tasks: JavaTask[]
+}
+
+export type JavaWeek = {
+  id: string
+  week: number
+  title: string
+  description: string
+  sections: JavaSection[]
+  status: JavaWeekStatus
+  notes: string
+}

@@ -16,6 +16,12 @@ import { JavaStudyTracker } from '../features/java-study-tracker/JavaStudyTracke
 import { JavaStudyProvider } from '../features/java-study-tracker/store'
 import { AgenticAiLearning } from '../features/agentic-ai-learning/AgenticAiLearning'
 import { AgenticAiProvider } from '../features/agentic-ai-learning/store'
+import { CloudMastery } from '../features/cloud-mastery/CloudMastery'
+import { CloudMasteryProvider } from '../features/cloud-mastery/store'
+import { ClaudeMastery } from '../features/claude-mastery/ClaudeMastery'
+import { ClaudeMasteryProvider } from '../features/claude-mastery/store'
+import { CurrentActions } from '../features/current-actions/CurrentActions'
+import { CurrentActionsProvider } from '../features/current-actions/store'
 import { navItems } from '../features/dashboard/data'
 import { Login } from '../features/auth/Login'
 import './App.css'
@@ -42,27 +48,32 @@ function App() {
     if (activeLabel === 'React Mastery') return <ReactMastery />
     if (activeLabel === 'Java Study Tracker') return <JavaStudyTracker />
     if (activeLabel === 'Agentic AI Learning') return <AgenticAiLearning />
+    if (activeLabel === 'Cloud Mastery') return <CloudMastery />
+    if (activeLabel === 'Claude Mastery') return <ClaudeMastery />
+    if (activeLabel === 'Currently Actioning') return <CurrentActions />
     return <Dashboard />
   }
 
   return (
-    <ProblemsProvider>
-      <BehavioralProvider>
-        <InterviewTrackerProvider><ReactMasteryProvider><GolangMasteryProvider><JavaStudyProvider><AgenticAiProvider><div className={className}>
-          <Sidebar activeNav={activeNav} onNavigate={setActiveNav} onLogout={() => setAuthenticated(false)} />
-          <main>
-            <Header
-              search={search}
-              onSearchChange={setSearch}
-              dark={dark}
-              onToggleTheme={() => setDark(!dark)}
-              onToggleSidebar={() => setCollapsed((v) => !v)}
-            />
-            {renderView()}
-          </main>
-        </div></AgenticAiProvider></JavaStudyProvider></GolangMasteryProvider></ReactMasteryProvider></InterviewTrackerProvider>
-      </BehavioralProvider>
-    </ProblemsProvider>
+    <CurrentActionsProvider>
+      <ProblemsProvider>
+        <BehavioralProvider>
+          <InterviewTrackerProvider><ReactMasteryProvider><GolangMasteryProvider><JavaStudyProvider><AgenticAiProvider><CloudMasteryProvider><ClaudeMasteryProvider><div className={className}>
+            <Sidebar activeNav={activeNav} onNavigate={setActiveNav} onLogout={() => setAuthenticated(false)} />
+            <main>
+              <Header
+                search={search}
+                onSearchChange={setSearch}
+                dark={dark}
+                onToggleTheme={() => setDark(!dark)}
+                onToggleSidebar={() => setCollapsed((v) => !v)}
+              />
+              {renderView()}
+            </main>
+          </div></ClaudeMasteryProvider></CloudMasteryProvider></AgenticAiProvider></JavaStudyProvider></GolangMasteryProvider></ReactMasteryProvider></InterviewTrackerProvider>
+        </BehavioralProvider>
+      </ProblemsProvider>
+    </CurrentActionsProvider>
   )
 }
 
