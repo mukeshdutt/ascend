@@ -14,4 +14,5 @@ export type Module = {
 export type NavItem = {
   label: string
   icon: IconName
+  path: string
 }

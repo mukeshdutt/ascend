@@ -7,11 +7,15 @@ import { useAgenticAi } from '../agentic-ai-learning/store'
 import { useInterviewTopics } from '../interview-tracker/store'
 import { useBehavioral } from '../behavioral-interview/store'
 import { useProblems } from '../tech-interview-tracker/store'
+import { useCloudMastery } from '../cloud-mastery/store'
+import { useClaudeMastery } from '../claude-mastery/store'
 import { GO_STATUS_LABEL } from '../golang-mastery/types'
 import { REACT_STATUS_LABEL } from '../react-mastery/types'
 import { JAVA_WEEK_STATUS_LABEL } from '../java-study-tracker/types'
 import { deriveWeekStatus } from '../java-study-tracker/store'
 import { AI_STATUS_LABEL } from '../agentic-ai-learning/types'
+import { PROJECT_STATUS_LABEL, CLOUD_PHASES } from '../cloud-mastery/types'
+import { CLAUDE_WEEK_STATUS_LABEL } from '../claude-mastery/types'
 import { useCurrentActions } from './store'
 import './current-actions.css'
 import '../../shared/mastery-layout.css'
@@ -40,6 +44,8 @@ const MODULE_META: Record<string, { label: string; color: string; icon: string }
   'golang-mastery': { label: 'Golang Mastery', color: '#2cb8bf', icon: 'box' },
   'java-study': { label: 'Java Study Tracker', color: '#ff8a26', icon: 'coffee' },
   'agentic-ai': { label: 'Agentic AI Learning', color: '#7851e8', icon: 'bot' },
+  'cloud-mastery': { label: 'Cloud Mastery', color: '#4285f4', icon: 'cloud' },
+  'claude-mastery': { label: 'Claude Mastery', color: '#c96442', icon: 'sparkles' },
 }
 
 export function CurrentActions() {
@@ -50,11 +56,13 @@ export function CurrentActions() {
   const { topics: goTopics } = useGolangMastery()
   const { weeks: javaWeeks } = useJavaStudy()
   const { studyWeeks: aiStudyWeeks, useCases: aiUseCases } = useAgenticAi()
+  const { cloudProjects } = useCloudMastery()
+  const { weeks: claudeWeeks } = useClaudeMastery()
   const { index, getSubTasks, addSubTask, toggleSubTask, deleteSubTask } = useCurrentActions()
 
-  const [selectedModule, setSelectedModule] = useState<string | null>(null)
-  const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
-  const [newSubTask, setNewSubTask] = useState('')
+  const [selectedModules, setSelectedModules] = useState<Set<string>>(new Set())
+  const [expandedItemKey, setExpandedItemKey] = useState<string | null>(null)
+  const [newSubTaskMap, setNewSubTaskMap] = useState<Record<string, string>>({})
 
   const groups = useMemo<ModuleGroup[]>(() => {
     const raw: { key: string; items: ActiveItem[] }[] = [
@@ -155,6 +163,33 @@ export function CurrentActions() {
           })),
         ],
       },
+      {
+        key: 'cloud-mastery',
+        items: cloudProjects
+          .filter(p => p.status === 'in-progress')
+          .map(p => {
+            const phase = CLOUD_PHASES.find(ph => ph.id === p.phaseId)
+            return {
+              id: p.id,
+              title: p.projectTitle,
+              subtitle: `${p.cloud} · ${p.serviceName}${phase ? ` · ${phase.label}` : ''}`,
+              statusLabel: PROJECT_STATUS_LABEL[p.status],
+              statusClass: p.status,
+            }
+          }),
+      },
+      {
+        key: 'claude-mastery',
+        items: claudeWeeks
+          .filter(w => w.status === 'in-progress')
+          .map(w => ({
+            id: w.id,
+            title: `Week ${w.week}: ${w.title}`,
+            subtitle: w.deliverable,
+            statusLabel: CLAUDE_WEEK_STATUS_LABEL[w.status],
+            statusClass: w.status,
+          })),
+      },
     ]
 
     return raw
@@ -169,7 +204,7 @@ export function CurrentActions() {
           items: g.items,
         }
       })
-  }, [interviewTopics, problems, stories, reactTopics, goTopics, javaWeeks, aiStudyWeeks, aiUseCases])
+  }, [interviewTopics, problems, stories, reactTopics, goTopics, javaWeeks, aiStudyWeeks, aiUseCases, cloudProjects, claudeWeeks])
 
   const totalPending = useMemo(() => groups.reduce((sum, g) => sum + g.items.length, 0), [groups])
   const activeModules = groups.length
@@ -186,36 +221,49 @@ export function CurrentActions() {
     return { subTasksOpen: open, subTasksDone: done }
   }, [index])
 
-  const activeGroup = groups.find(g => g.key === selectedModule) ?? null
+  const visibleGroups = selectedModules.size === 0
+    ? []
+    : groups.filter(g => selectedModules.has(g.key))
 
-  const subTasks = selectedModule && selectedItemId
-    ? getSubTasks(selectedModule, selectedItemId)
-    : []
-
-  const selectedItem = activeGroup?.items.find(i => i.id === selectedItemId) ?? null
-
-  const donePct = subTasks.length
-    ? Math.round(subTasks.filter(s => s.done).length / subTasks.length * 100)
-    : 0
-
-  function handleModuleClick(key: string) {
-    const group = groups.find(g => g.key === key)
-    setSelectedModule(key)
-    setSelectedItemId(group?.items[0]?.id ?? null)
-    setNewSubTask('')
+  function toggleModule(key: string) {
+    setSelectedModules(prev => {
+      const next = new Set(prev)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
   }
 
-  function handleAddSubTask() {
-    if (!selectedModule || !selectedItemId || !newSubTask.trim()) return
-    addSubTask(selectedModule, selectedItemId, newSubTask.trim())
-    setNewSubTask('')
+  function removeModule(key: string) {
+    setSelectedModules(prev => {
+      const next = new Set(prev)
+      next.delete(key)
+      return next
+    })
+    // collapse any expanded items from this module
+    if (expandedItemKey?.startsWith(key + '::')) setExpandedItemKey(null)
+  }
+
+  function toggleExpand(moduleKey: string, itemId: string) {
+    const k = `${moduleKey}::${itemId}`
+    setExpandedItemKey(prev => (prev === k ? null : k))
+  }
+
+  function handleAddSubTask(moduleKey: string, itemId: string) {
+    const mapKey = `${moduleKey}::${itemId}`
+    const title = (newSubTaskMap[mapKey] ?? '').trim()
+    if (!title) return
+    addSubTask(moduleKey, itemId, title)
+    setNewSubTaskMap(prev => ({ ...prev, [mapKey]: '' }))
   }
 
   return (
-    <div className="current-actions mastery-page">
-      <div className="intro">
-        <h1>Current Actions</h1>
-        <p>Your active work queue across all learning modules</p>
+    <div className="current-actions content">
+      <div className="ca-page-header">
+        <div className="intro">
+          <h1>Current Actions</h1>
+          <p>Your active work queue across all learning modules</p>
+        </div>
       </div>
 
       {/* Stats bar */}
@@ -238,7 +286,6 @@ export function CurrentActions() {
         </div>
       </div>
 
-      {/* Module cards */}
       {groups.length === 0 ? (
         <div className="ca-empty">
           <h3>All caught up!</h3>
@@ -246,118 +293,203 @@ export function CurrentActions() {
         </div>
       ) : (
         <>
-          <div className="ca-cards">
-            {groups.map(g => (
-              <button
-                key={g.key}
-                className={`ca-mod-card${selectedModule === g.key ? ' active' : ''}`}
-                style={{ '--mod-color': g.color } as React.CSSProperties}
-                onClick={() => handleModuleClick(g.key)}
-              >
-                <div className="ca-mod-icon">
-                  <Icon name={g.iconName as Parameters<typeof Icon>[0]['name']} size={18} />
-                </div>
-                <div className="ca-mod-body">
-                  <div className="ca-mod-name">{g.label}</div>
-                  <div className="ca-mod-sub">active items</div>
-                </div>
-                <div className="ca-mod-badge">{g.items.length}</div>
-              </button>
-            ))}
+          {/* Module pill filter */}
+          <div className="ca-filter-bar">
+            <span className="ca-filter-label">Filter by module:</span>
+            <div className="ca-pills">
+              {groups.map(g => (
+                <button
+                  key={g.key}
+                  className={`ca-pill${selectedModules.has(g.key) ? ' selected' : ''}`}
+                  style={{ '--mod-color': g.color } as React.CSSProperties}
+                  onClick={() => toggleModule(g.key)}
+                >
+                  <span className="ca-pill-icon">
+                    <Icon name={g.iconName as Parameters<typeof Icon>[0]['name']} size={13} />
+                  </span>
+                  {g.label}
+                  <span className="ca-pill-count">{g.items.length}</span>
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* Workspace */}
-          {selectedModule && activeGroup ? (
-            <div className="ca-workspace">
-              {/* Left: task list */}
-              <div className="ca-task-list">
-                <div className="ca-task-list-hd">
-                  <h3>{activeGroup.label}</h3>
-                  <span>{activeGroup.items.length} items</span>
-                </div>
-                <div className="ca-task-list-body">
-                  {activeGroup.items.map(item => (
-                    <button
-                      key={item.id}
-                      className={`ca-task-row${selectedItemId === item.id ? ' active' : ''}`}
-                      onClick={() => { setSelectedItemId(item.id); setNewSubTask('') }}
-                    >
-                      <div className="ca-task-row-title">{item.title}</div>
-                      {item.subtitle && <div className="ca-task-row-sub">{item.subtitle}</div>}
-                      <div className="ca-task-row-foot">
-                        <span className={`ca-badge ${item.statusClass}`}>{item.statusLabel}</span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Right: sub-task panel */}
-              {selectedItemId && selectedItem ? (
-                <div className="ca-subtask-panel">
-                  <div className="ca-subtask-hd">
-                    <h3>{selectedItem.title}</h3>
-                    <div className="ca-subtask-meta">{selectedItem.subtitle}</div>
-                    {subTasks.length > 0 && (
-                      <div className="ca-subtask-progress">
-                        <div className="ca-subtask-progress-track">
-                          <div
-                            className="ca-subtask-progress-fill"
-                            style={{ width: `${donePct}%` }}
-                          />
-                        </div>
-                        <div className="ca-subtask-progress-label">{donePct}% done</div>
-                      </div>
-                    )}
-                  </div>
-                  <div className="ca-subtask-body">
-                    {subTasks.length === 0 ? (
-                      <div className="ca-subtask-empty-msg">No sub-tasks yet. Add one below to break this item into steps.</div>
-                    ) : (
-                      subTasks.map(st => (
-                        <div key={st.id} className={`ca-subtask-row${st.done ? ' done' : ''}`}>
-                          <input
-                            type="checkbox"
-                            checked={st.done}
-                            onChange={() => toggleSubTask(selectedModule, selectedItemId, st.id)}
-                          />
-                          <div className="ca-subtask-row-title">{st.title}</div>
-                          <button
-                            className="ca-subtask-del"
-                            onClick={() => deleteSubTask(selectedModule, selectedItemId, st.id)}
-                            title="Delete sub-task"
-                          >
-                            <Icon name="x" size={13} />
-                          </button>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                  <div className="ca-subtask-add">
-                    <input
-                      type="text"
-                      placeholder="Add a sub-task…"
-                      value={newSubTask}
-                      onChange={e => setNewSubTask(e.target.value)}
-                      onKeyDown={e => { if (e.key === 'Enter') handleAddSubTask() }}
-                    />
-                    <button onClick={handleAddSubTask} disabled={!newSubTask.trim()}>
-                      <Icon name="plus" size={13} />
-                      Add
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="ca-subtask-panel">
-                  <div className="ca-subtask-placeholder">Select a task from the list to manage sub-tasks</div>
-                </div>
-              )}
+          {/* Module cards */}
+          {selectedModules.size === 0 ? (
+            <div className="ca-hint">
+              <Icon name="clipboard" size={20} />
+              <span>Select one or more modules above to view their in-progress tasks</span>
             </div>
           ) : (
-            <div className="ca-hint">Click a module card above to see its active tasks</div>
+            <div className="ca-module-cards">
+              {visibleGroups.map(g => (
+                <ModuleCard
+                  key={g.key}
+                  group={g}
+                  expandedItemKey={expandedItemKey}
+                  newSubTaskMap={newSubTaskMap}
+                  getSubTasks={getSubTasks}
+                  onToggleExpand={toggleExpand}
+                  onRemove={removeModule}
+                  onToggleSubTask={toggleSubTask}
+                  onDeleteSubTask={deleteSubTask}
+                  onNewSubTaskChange={(mk, id, val) =>
+                    setNewSubTaskMap(prev => ({ ...prev, [`${mk}::${id}`]: val }))
+                  }
+                  onAddSubTask={handleAddSubTask}
+                />
+              ))}
+            </div>
           )}
         </>
       )}
+    </div>
+  )
+}
+
+type ModuleCardProps = {
+  group: ModuleGroup
+  expandedItemKey: string | null
+  newSubTaskMap: Record<string, string>
+  getSubTasks: (mk: string, id: string) => { id: string; title: string; done: boolean }[]
+  onToggleExpand: (mk: string, id: string) => void
+  onRemove: (key: string) => void
+  onToggleSubTask: (mk: string, id: string, stId: string) => void
+  onDeleteSubTask: (mk: string, id: string, stId: string) => void
+  onNewSubTaskChange: (mk: string, id: string, val: string) => void
+  onAddSubTask: (mk: string, id: string) => void
+}
+
+function ModuleCard({
+  group,
+  expandedItemKey,
+  newSubTaskMap,
+  getSubTasks,
+  onToggleExpand,
+  onRemove,
+  onToggleSubTask,
+  onDeleteSubTask,
+  onNewSubTaskChange,
+  onAddSubTask,
+}: ModuleCardProps) {
+  return (
+    <div
+      className="ca-module-card"
+      style={{ '--mod-color': group.color } as React.CSSProperties}
+    >
+      {/* Card header */}
+      <div className="ca-card-header">
+        <div className="ca-card-header-left">
+          <div className="ca-card-icon">
+            <Icon name={group.iconName as Parameters<typeof Icon>[0]['name']} size={16} />
+          </div>
+          <div className="ca-card-title-block">
+            <div className="ca-card-name">{group.label}</div>
+            <div className="ca-card-count">{group.items.length} pending task{group.items.length !== 1 ? 's' : ''}</div>
+          </div>
+        </div>
+        <button
+          className="ca-card-close"
+          onClick={() => onRemove(group.key)}
+          title="Remove module"
+          aria-label="Remove module"
+        >
+          <Icon name="x" size={14} />
+        </button>
+      </div>
+
+      {/* Task list */}
+      <div className="ca-card-tasks">
+        {group.items.map((item, idx) => {
+          const itemKey = `${group.key}::${item.id}`
+          const isExpanded = expandedItemKey === itemKey
+          const subTasks = getSubTasks(group.key, item.id)
+          const donePct = subTasks.length
+            ? Math.round(subTasks.filter(s => s.done).length / subTasks.length * 100)
+            : 0
+          const newVal = newSubTaskMap[itemKey] ?? ''
+
+          return (
+            <div key={item.id} className={`ca-task-item${isExpanded ? ' expanded' : ''}${idx === group.items.length - 1 ? ' last' : ''}`}>
+              {/* Task row */}
+              <button
+                className="ca-task-header"
+                onClick={() => onToggleExpand(group.key, item.id)}
+              >
+                <div className="ca-task-chevron">
+                  <Icon name={isExpanded ? 'chevronDown' : 'chevronRight'} size={12} />
+                </div>
+                <div className="ca-task-info">
+                  <div className="ca-task-title">{item.title}</div>
+                  {item.subtitle && <div className="ca-task-subtitle">{item.subtitle}</div>}
+                </div>
+                <div className="ca-task-meta">
+                  {subTasks.length > 0 && (
+                    <span className="ca-task-st-count">
+                      {subTasks.filter(s => s.done).length}/{subTasks.length} done
+                    </span>
+                  )}
+                  <span className={`ca-badge ${item.statusClass}`}>{item.statusLabel}</span>
+                </div>
+              </button>
+
+              {/* Expanded subtask panel */}
+              {isExpanded && (
+                <div className="ca-subtask-panel">
+                  {subTasks.length > 0 && (
+                    <div className="ca-stask-progress-row">
+                      <div className="ca-stask-bar">
+                        <div className="ca-stask-fill" style={{ width: `${donePct}%` }} />
+                      </div>
+                      <span className="ca-stask-pct">{donePct}%</span>
+                    </div>
+                  )}
+
+                  {subTasks.length === 0 ? (
+                    <div className="ca-stask-empty">No sub-tasks yet — add one below to break this into steps.</div>
+                  ) : (
+                    <div className="ca-stask-list">
+                      {subTasks.map(st => (
+                        <div key={st.id} className={`ca-stask-row${st.done ? ' done' : ''}`}>
+                          <input
+                            type="checkbox"
+                            checked={st.done}
+                            onChange={() => onToggleSubTask(group.key, item.id, st.id)}
+                          />
+                          <span className="ca-stask-title">{st.title}</span>
+                          <button
+                            className="ca-stask-del"
+                            onClick={() => onDeleteSubTask(group.key, item.id, st.id)}
+                            title="Delete"
+                          >
+                            <Icon name="x" size={11} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="ca-stask-add">
+                    <input
+                      type="text"
+                      placeholder="Add a sub-task…"
+                      value={newVal}
+                      onChange={e => onNewSubTaskChange(group.key, item.id, e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') onAddSubTask(group.key, item.id) }}
+                    />
+                    <button
+                      onClick={() => onAddSubTask(group.key, item.id)}
+                      disabled={!newVal.trim()}
+                    >
+                      <Icon name="plus" size={12} />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }

@@ -12,13 +12,25 @@ export const modules: Module[] = [
   { name: 'Java Study Tracker', icon: 'coffee', color: '#ff8a26', progress: 65, done: 18, active: 14, left: 5, updated: 'Updated 1d ago' },
 ]
 
+const MODULE_PATHS: Record<string, string> = {
+  'Behavioral Interview':  '/behavioral-interview',
+  'Interview 2026':        '/interview-2026',
+  'Technical Learning':    '/technical-learning',
+  'Agentic AI Learning':   '/agentic-ai-learning',
+  'Claude Mastery':        '/claude-mastery',
+  'Cloud Mastery':         '/cloud-mastery',
+  'React Mastery':         '/react-mastery',
+  'Golang Mastery':        '/golang-mastery',
+  'Java Study Tracker':    '/java-study-tracker',
+}
+
 // Sidebar navigation: top-level views (Dashboard, Currently Actioning) followed
 // by one link per module. "Currently Actioning" aggregates the in-progress items
 // pulled from every module.
 export const navItems: NavItem[] = [
-  { label: 'Dashboard', icon: 'dashboard' },
-  { label: 'Currently Actioning', icon: 'activity' },
-  ...modules.map((m): NavItem => ({ label: m.name, icon: m.icon })),
+  { label: 'Dashboard',          icon: 'dashboard', path: '/' },
+  { label: 'Currently Actioning', icon: 'activity',  path: '/current-actions' },
+  ...modules.map((m): NavItem => ({ label: m.name, icon: m.icon, path: MODULE_PATHS[m.name] ?? '/' })),
 ]
 
 export const attention: { module: Module; lastUpdated: string; badge: string }[] = [

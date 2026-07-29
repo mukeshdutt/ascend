@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { Sidebar } from '../features/layout/Sidebar'
 import { Header } from '../features/layout/Header'
 import { Dashboard } from '../features/dashboard/Dashboard'
@@ -23,7 +24,6 @@ import { ClaudeMastery } from '../features/claude-mastery/ClaudeMastery'
 import { ClaudeMasteryProvider } from '../features/claude-mastery/store'
 import { CurrentActions } from '../features/current-actions/CurrentActions'
 import { CurrentActionsProvider } from '../features/current-actions/store'
-import { navItems } from '../features/dashboard/data'
 import { Login } from '../features/auth/Login'
 import './App.css'
 
@@ -31,7 +31,6 @@ function App() {
   const [authenticated, setAuthenticated] = useState(false)
   const [dark, setDark] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
-  const [activeNav, setActiveNav] = useState(0)
   const [search, setSearch] = useState('')
 
   if (!authenticated) {
@@ -39,41 +38,53 @@ function App() {
   }
 
   const className = ['app', dark && 'dark', collapsed && 'collapsed'].filter(Boolean).join(' ')
-  const activeLabel = navItems[activeNav]?.label
-
-  const renderView = () => {
-    if (activeLabel === 'Technical Learning') return <TechnicalLearning />
-    if (activeLabel === 'Golang Mastery') return <GolangMastery />
-    if (activeLabel === 'Behavioral Interview') return <BehavioralInterview />
-    if (activeLabel === 'Interview 2026') return <InterviewTracker />
-    if (activeLabel === 'React Mastery') return <ReactMastery />
-    if (activeLabel === 'Java Study Tracker') return <JavaStudyTracker />
-    if (activeLabel === 'Agentic AI Learning') return <AgenticAiLearning />
-    if (activeLabel === 'Cloud Mastery') return <CloudMastery />
-    if (activeLabel === 'Claude Mastery') return <ClaudeMastery />
-    if (activeLabel === 'Currently Actioning') return <CurrentActions />
-    return <Dashboard />
-  }
 
   return (
     <CurrentActionsProvider>
       <ProblemsProvider>
         <TechLearningProvider>
-        <BehavioralProvider>
-          <InterviewTrackerProvider><ReactMasteryProvider><GolangMasteryProvider><JavaStudyProvider><AgenticAiProvider><CloudMasteryProvider><ClaudeMasteryProvider><div className={className}>
-            <Sidebar activeNav={activeNav} onNavigate={setActiveNav} onLogout={() => setAuthenticated(false)} />
-            <main>
-              <Header
-                search={search}
-                onSearchChange={setSearch}
-                dark={dark}
-                onToggleTheme={() => setDark(!dark)}
-                onToggleSidebar={() => setCollapsed((v) => !v)}
-              />
-              {renderView()}
-            </main>
-          </div></ClaudeMasteryProvider></CloudMasteryProvider></AgenticAiProvider></JavaStudyProvider></GolangMasteryProvider></ReactMasteryProvider></InterviewTrackerProvider>
-        </BehavioralProvider>
+          <BehavioralProvider>
+            <InterviewTrackerProvider>
+              <ReactMasteryProvider>
+                <GolangMasteryProvider>
+                  <JavaStudyProvider>
+                    <AgenticAiProvider>
+                      <CloudMasteryProvider>
+                        <ClaudeMasteryProvider>
+                          <div className={className}>
+                            <Sidebar onLogout={() => setAuthenticated(false)} />
+                            <main>
+                              <Header
+                                search={search}
+                                onSearchChange={setSearch}
+                                dark={dark}
+                                onToggleTheme={() => setDark(!dark)}
+                                onToggleSidebar={() => setCollapsed(v => !v)}
+                              />
+                              <Routes>
+                                <Route path="/"                      element={<Dashboard />} />
+                                <Route path="/current-actions"        element={<CurrentActions />} />
+                                <Route path="/behavioral-interview"   element={<BehavioralInterview />} />
+                                <Route path="/interview-2026"         element={<InterviewTracker />} />
+                                <Route path="/technical-learning"     element={<TechnicalLearning />} />
+                                <Route path="/agentic-ai-learning"    element={<AgenticAiLearning />} />
+                                <Route path="/claude-mastery"         element={<ClaudeMastery />} />
+                                <Route path="/cloud-mastery"          element={<CloudMastery />} />
+                                <Route path="/react-mastery"          element={<ReactMastery />} />
+                                <Route path="/golang-mastery"         element={<GolangMastery />} />
+                                <Route path="/java-study-tracker"     element={<JavaStudyTracker />} />
+                                <Route path="*"                       element={<Navigate to="/" replace />} />
+                              </Routes>
+                            </main>
+                          </div>
+                        </ClaudeMasteryProvider>
+                      </CloudMasteryProvider>
+                    </AgenticAiProvider>
+                  </JavaStudyProvider>
+                </GolangMasteryProvider>
+              </ReactMasteryProvider>
+            </InterviewTrackerProvider>
+          </BehavioralProvider>
         </TechLearningProvider>
       </ProblemsProvider>
     </CurrentActionsProvider>

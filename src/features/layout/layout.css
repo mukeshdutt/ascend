@@ -38,6 +38,7 @@ nav {
   gap: 6px;
 }
 nav button,
+nav a,
 .sidebar-bottom button {
   border: 0;
   background: transparent;
@@ -45,13 +46,14 @@ nav button,
   text-align: left;
   border-radius: 8px;
   padding: 10px 12px;
-  /* Reduced navigation font size */
   font-size: 12.5px;
   font-weight: 600;
   white-space: nowrap;
   display: flex;
   align-items: center;
   gap: 11px;
+  text-decoration: none;
+  cursor: pointer;
 }
 nav b,
 .sidebar-bottom b {
@@ -62,15 +64,18 @@ nav b,
   flex: none;
   color: #aebce0;
 }
-nav button.selected {
+nav button.selected,
+nav a.selected {
   background: linear-gradient(100deg, #2a74f3, #7846e7);
   color: #fff;
   box-shadow: 0 8px 20px #2b42a94a;
 }
-nav button.selected b {
+nav button.selected b,
+nav a.selected b {
   color: #fff;
 }
 nav button:hover:not(.selected),
+nav a:hover:not(.selected),
 .sidebar-bottom button:hover {
   background: #ffffff12;
   color: #fff;
@@ -185,6 +190,7 @@ nav button:hover:not(.selected),
   padding: 0 0 24px;
 }
 .app.collapsed nav button,
+.app.collapsed nav a,
 .app.collapsed .sidebar-bottom button {
   justify-content: center;
   gap: 0;

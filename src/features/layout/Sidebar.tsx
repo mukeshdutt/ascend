@@ -1,13 +1,12 @@
+import { NavLink } from 'react-router-dom'
 import { Icon } from '../../shared/icons/Icon'
 import { navItems } from '../../features/dashboard/data'
 
 type SidebarProps = {
-  activeNav: number
-  onNavigate: (index: number) => void
   onLogout: () => void
 }
 
-export function Sidebar({ activeNav, onNavigate, onLogout }: SidebarProps) {
+export function Sidebar({ onLogout }: SidebarProps) {
   return (
     <aside className="sidebar">
       <div className="brand">
@@ -16,16 +15,17 @@ export function Sidebar({ activeNav, onNavigate, onLogout }: SidebarProps) {
       </div>
 
       <nav>
-        {navItems.map((item, index) => (
-          <button
-            key={item.label}
-            className={activeNav === index ? 'selected' : ''}
-            onClick={() => onNavigate(index)}
+        {navItems.map(item => (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            className={({ isActive }) => isActive ? 'selected' : ''}
             title={item.label}
+            end={item.path === '/'}
           >
             <b><Icon name={item.icon} size={18} /></b>
             <span className="label">{item.label}</span>
-          </button>
+          </NavLink>
         ))}
       </nav>
 
